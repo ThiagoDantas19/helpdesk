@@ -5,25 +5,27 @@ from database.models.usuarios import Setor, Cargo, User
 logger = logging.getLogger(__name__)
 
 
+def _estrutura_padrao():
+    """Estrutura generica minima mantida no repositorio publico.
+
+    Se existir database/seed_personalizado.py (arquivo local, fora do git),
+    a estrutura real da unidade e usada no lugar desta.
+    """
+    try:
+        from database.seed_personalizado import esquema_organizacional
+        return esquema_organizacional
+    except ImportError:
+        pass
+    return {
+        'TI': ['Coordenador(a)', 'Técnico(a) de TI'],
+    }
+
+
 def popular_setores_e_cargos():
     if Setor.select().count() == 0:
         logger.info("Alimentando o banco de dados com setores e cargos...")
 
-        esquema_organizacional = {
-            'Diretoria': ['Diretor(a)', 'Coordenador(a)'],
-            'Financeiro': ['Coordenador(a)', 'Analista', 'Assistente'],
-            'Recursos Humanos': ['Coordenador(a)', 'Analista', 'Assistente'],
-            'Comercial / Marketing': ['Coordenador(a)', 'Analista', 'Assistente'],
-            'Recepção / Triagem': ['Coordenador(a)', 'Recepcionista', 'Auxiliar'],
-            'Atendimento Clínico': ['Coordenador(a)','Médico(a) Veterinário(a)', 'Enfermeiro(a) Veterinário(a)'],
-            'Internação / UTI': ['Coordenador(a)', 'Médico(a) Veterinário(a)', 'Enfermeiro(a) Veterinário(a)', 'Auxiliar'],
-            'Centro Cirúrgico': ['Coordenador(a)', 'Médico(a) Veterinário(a)', 'Enfermeiro(a) Veterinário(a)', 'Auxiliar'],
-            'Imagem': ['Coordenador(a)', 'Médico(a) Veterinário(a)', 'Enfermeiro(a) Veterinário(a)', 'Auxiliar'],
-            'Laboratório': ['Coordenador(a)', 'Médico(a) Veterinário(a)', 'Auxiliar'],
-            'Farmácia Hospitalar': ['Coordenador(a)', 'Farmacêutico(a)', 'Enfermeiro(a) Veterinário(a)', 'Auxiliar'],
-            'TI': ['Coordenador(a)', 'Técnico(a) de TI'],
-            'Manutenção / Facilities': ['Coordenador(a)', 'Auxiliar']
-        }
+        esquema_organizacional = _estrutura_padrao()
 
         with db.atomic():
             for nome_setor, lista_cargos in esquema_organizacional.items():

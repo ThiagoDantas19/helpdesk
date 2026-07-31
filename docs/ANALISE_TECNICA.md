@@ -38,7 +38,8 @@ crud/
 │   ├── database.py                  # db = Proxy() + init_db() (desacopla inicialização)
 │   ├── migrations.py                # 8 migrações versionadas (v001 → v008, em ordem)
 │   ├── registry.py                  # Registro central de modelos para create_tables
-│   ├── seed.py                      # 13 setores (estrutura hospitalar vet.) + admin padrão
+│   ├── seed.py                      # Setores/cargos (estrutura genérica mínima) + admin padrão
+│   ├── seed_personalizado.py        # (LOCAL, fora do git) estrutura real da unidade — sobrescreve o seed genérico
 │   └── models/
 │       ├── usuarios.py              # Setor, Cargo, User (hash de senha, FK setor/cargo)
 │       ├── equipamentos.py          # 15 modelos: Patrimonio + específicos + auditorias
@@ -241,7 +242,10 @@ impressora/item)
 - Tarefas pessoais com calendário
 - Log de auditoria completo (quem fez o quê, quando, IP)
 - CRUD de usuários, setores e cargos
-- Setup first-run e seed via interface
+- **Setup first-run e seed via interface**: `seed.py` aplica uma estrutura genérica
+  mínima (setor TI + cargos) no repositório público; se o arquivo local
+  `database/seed_personalizado.py` existir (fora do git), ele é usado no lugar —
+  mantendo a estrutura organizacional real fora do repositório.
 - Tema dark/light, dashboard com indicadores
 
 ---

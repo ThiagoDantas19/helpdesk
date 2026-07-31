@@ -10,3 +10,4 @@ __pycache__/
 uploads/*
 .agents/
 skills-lock.json
+database/seed_personalizado.py
