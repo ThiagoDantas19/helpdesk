@@ -18,6 +18,10 @@ Internal IT helpdesk and asset management web app with periodic equipment audits
 - **Migrações versionadas** — banco evolui de forma incremental na inicialização.
 - **143 testes automatizados** (pytest) cobrindo rotas, permissões e serviços.
 
+### Documentação
+- 📖 [Manual de Uso](docs/MANUAL_DE_USO.md) — instalação, primeiros passos e uso de cada módulo (PT-BR).
+- 🔬 [Análise Técnica](docs/ANALISE_TECNICA.md) — arquitetura, banco de dados, rotas, segurança e changelog.
+
 ### Tecnologias
 - **Backend:** Python 3.14, Flask 3.1, Flask-Login, Flask-WTF (CSRF), Flask-Caching
 - **ORM:** Peewee 4.0 (SQLite com WAL)
@@ -55,6 +59,7 @@ database/            Modelos Peewee, migrações versionadas, seed
 routes/              Blueprints (auth, task, user, inventario, ...)
 services/            Camada de serviço (ex.: EquipamentoService)
 templates/           Jinja2
+docs/                Manual de uso + análise técnica (PT-BR)
 tests/               Suite de testes (pytest)
 utils/               Cache, uploads, constantes, helpers
 ```
@@ -81,6 +86,10 @@ O projeto usa SQLite com WAL — adequado para uso interno com um único process
 - **Audit logs** — full action trail (create, edit, delete) per user.
 - **Versioned migrations** — incremental DB schema updates on startup.
 - **143 automated tests** (pytest) covering routes, permissions and services.
+
+### Docs
+- 📖 [User Manual](docs/MANUAL_DE_USO.md) — installation, first steps and module usage (PT-BR).
+- 🔬 [Technical Analysis](docs/ANALISE_TECNICA.md) — architecture, database, routes, security and changelog (PT-BR).
 
 ### Tech stack
 - **Backend:** Python 3.14, Flask 3.1, Flask-Login, Flask-WTF (CSRF), Flask-Caching
