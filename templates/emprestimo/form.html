@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Novo Empréstimo{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="/emprestimo/" class="btn btn-link p-0 text-decoration-none text-muted small">← Voltar para lista</a>
+      <h1 class="h3 mt-2">Novo Empréstimo</h1>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+      <form method="post" action="/emprestimo/">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-muted text-uppercase">Equipamento</label>
+            <select class="form-select select2-search" name="patrimonio_id" required>
+              <option value="">Selecione o equipamento...</option>
+              {% for p in patrimonios %}
+              <option value="{{ p.id }}">{{ p.nome_identificador }} ({{ p.tipo }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-muted text-uppercase">Tomador (quem vai usar)</label>
+            <select class="form-select select2-search" name="usuario_id" required>
+              <option value="">Selecione o usuário...</option>
+              {% for u in usuarios %}
+              <option value="{{ u.id }}">{{ u.nome_completo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-muted text-uppercase">Previsão de Devolução</label>
+            <input class="form-control" type="date" name="data_devolucao_prevista" />
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-bold small text-muted text-uppercase">Observações</label>
+            <textarea class="form-control" name="observacoes" rows="3" placeholder="Motivo do empréstimo, estado do equipamento..."></textarea>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-top">
+          <button type="submit" class="btn btn-primary px-5 shadow-sm">
+            <i class="bi bi-check-lg me-2"></i> Registrar Empréstimo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

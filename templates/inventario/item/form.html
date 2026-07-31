@@ -1,0 +1,161 @@
+{% extends "base.html" %} {% block title %}Novo Item Diverso - HelpDesk{%
+endblock %} {% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 fw-bold">Cadastrar Item Diverso</h1>
+      <p class="text-muted mb-0">
+        Registre periféricos, monitores ou outros equipamentos de TI.
+      </p>
+    </div>
+    <a href="/inventario/item/" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" action="/inventario/item/">
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-tag me-2"></i>Identificação
+                </h6>
+              </div>
+
+              <div class="col-md-3">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Patrimônio</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="patrimonio"
+                  maxlength="4"
+                  pattern="[0-9]{1,4}"
+                  inputmode="numeric"
+                  placeholder="Ex: 1234"
+                  required
+                />
+              </div>
+              <div class="col-md-5">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Nome do Item</label
+                >
+                <input
+                  class="form-control"
+                  name="nome"
+                  placeholder="Ex: Monitor LG 29' UltraWide"
+                  required
+                />
+              </div>
+              <div class="col-md-4">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Tipo / Categoria</label
+                >
+                <input
+                  class="form-control"
+                  name="tipo_item"
+                  list="tipos-sugeridos"
+                  placeholder="Selecione ou digite..."
+                  required
+                />
+                <datalist id="tipos-sugeridos">
+                  <option value="Monitor"></option>
+                  <option value="Tablet"></option>
+                  <option value="Projetor"></option>
+                  <option value="Câmera"></option>
+                  <option value="Rádio"></option>
+                  <option value="Leitor de Código de Barras"></option>
+                  <option value="Switch / Hub"></option>
+                  <option value="Periférico"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-geo-alt me-2"></i>Alocação e Controle
+                </h6>
+              </div>
+
+              <div class="col-md-4">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Número de Série</label
+                >
+                <input
+                  class="form-control font-monospace"
+                  name="numero_serie"
+                  placeholder="S/N do fabricante"
+                />
+              </div>
+              <div class="col-md-4">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Setor Destino</label
+                >
+                <select class="form-select select2-search" name="setor_id" required>
+                  <option value="">Selecione o setor...</option>
+                  {% for s in setores %}
+                  <option value="{{ s.id }}">{{ s.nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Responsável (Opcional)</label
+                >
+                <select class="form-select select2-search" name="responsavel_id">
+                  <option value="">Uso Comum / Setorial</option>
+                  {% for u in usuarios %}
+                  <option value="{{ u.id }}" data-setor="{{ u.setor_id }}">{{ u.nome_completo }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-chat-left-text me-2"></i>Observações Técnicas
+                </h6>
+              </div>
+              <div class="col-12">
+                <textarea
+                  class="form-control"
+                  name="observacoes"
+                  rows="4"
+                  placeholder="Ex: Acompanha cabos HDMI e fonte original. Equipamento seminovo."
+                ></textarea>
+              </div>
+            </div>
+
+            <div
+              class="d-flex justify-content-end align-items-center pt-3 border-top"
+            >
+              <a
+                href="/inventario/item/"
+                class="btn btn-link text-muted text-decoration-none me-3"
+                >Cancelar</a
+              >
+              <button
+                type="submit"
+                class="btn btn-primary px-5 py-2 fw-bold shadow-sm"
+              >
+                <i class="bi bi-check-lg me-2"></i>Cadastrar Item
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - HelpDesk{% endblock %}
+{% block head %}
+<style>
+.tarefa-item { transition: background-color 0.15s, box-shadow 0.15s; }
+.tarefa-item:hover { background-color: var(--bs-tertiary-bg); }
+.tarefa-item.concluida { opacity: 0.6; }
+.tarefa-item.concluida .tarefa-titulo { text-decoration: line-through; color: var(--bs-secondary-color); }
+.tarefa-item .delete-tarefa { opacity: 0; transition: opacity 0.15s; }
+.tarefa-item:hover .delete-tarefa { opacity: 1; }
+.tarefa-avatar { background-color: var(--bs-primary-bg-subtle); color: var(--bs-primary); }
+.tarefa-item.concluida .tarefa-avatar { background-color: var(--bs-success-bg-subtle); color: var(--bs-success); }
+.tarefa-atrasada .tarefa-titulo { color: var(--bs-danger); }
+.tarefa-atrasada .tarefa-avatar { background-color: var(--bs-danger-bg-subtle); color: var(--bs-danger); }
+.tarefa-check-wrap .form-check-input { width: 1.1em; height: 1.1em; cursor: pointer; margin: 0; }
+.calendario { width: 100%; border-collapse: separate; border-spacing: 2px; }
+.calendario th { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--bs-secondary-color); padding-bottom: 6px; text-align: center; }
+.calendario td { text-align: center; vertical-align: middle; height: 36px; width: 14.28%; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.12s; position: relative; }
+.calendario td:hover { background-color: var(--bs-tertiary-bg); }
+.calendario td.hoje { font-weight: 700; background-color: var(--bs-primary-bg-subtle); color: var(--bs-primary); }
+.calendario td.selecionado { background-color: var(--bs-primary); color: #fff; font-weight: 700; }
+.calendario td.outro-mes { color: var(--bs-secondary-color); opacity: 0.4; cursor: default; }
+.calendario td.outro-mes:hover { background: transparent; }
+.calendario .cal-dot-wrap { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; }
+.calendario .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--bs-primary); }
+.calendario td.selecionado .cal-dot { background: #fff; }
+.tarefa-data { font-size: 0.7rem; color: var(--bs-secondary-color); white-space: nowrap; }
+.tarefa-atrasada .tarefa-data { color: var(--bs-danger); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="mb-4">
+    <h1 class="h3 mb-1 fw-bold">Dashboard</h1>
+    <p class="text-muted mb-0">Visão geral do suporte, {{ current_user.nome_completo }}.</p>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small text-muted mb-0 text-uppercase fw-semibold">Abertos Hoje</p>
+              <h2 class="fw-bold mb-0 text-primary">{{ abertos_hoje }}</h2>
+            </div>
+            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-ticket-perforated text-primary fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small text-muted mb-0 text-uppercase fw-semibold">Aguardando</p>
+              <h2 class="fw-bold mb-0 text-warning">{{ aguardando }}</h2>
+            </div>
+            <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-hourglass-split text-warning fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small text-muted mb-0 text-uppercase fw-semibold">Urgentes</p>
+              <h2 class="fw-bold mb-0 text-danger">{{ urgentes }}</h2>
+            </div>
+            <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="small text-muted mb-0 text-uppercase fw-semibold">Fechados/Mês</p>
+              <h2 class="fw-bold mb-0 text-success">{{ fechados_mes }}</h2>
+            </div>
+            <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+              <i class="bi bi-check-circle text-success fs-4"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-bottom py-2">
+          <div class="d-flex align-items-center justify-content-between">
+            <button class="btn btn-sm btn-link text-decoration-none p-1" id="cal-mes-ant" title="Mês anterior"><i class="bi bi-chevron-left fs-5"></i></button>
+            <h5 class="fw-bold mb-0" id="cal-titulo"></h5>
+            <button class="btn btn-sm btn-link text-decoration-none p-1" id="cal-mes-pos" title="Próximo mês"><i class="bi bi-chevron-right fs-5"></i></button>
+          </div>
+        </div>
+        <div class="card-body p-3">
+          <table class="calendario" id="calendario-table">
+            <thead>
+              <tr>
+                <th>Dom</th>
+                <th>Seg</th>
+                <th>Ter</th>
+                <th>Qua</th>
+                <th>Qui</th>
+                <th>Sex</th>
+                <th>Sáb</th>
+              </tr>
+            </thead>
+            <tbody id="calendario-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+            <div>
+              <h5 class="fw-bold mb-1"><i class="bi bi-check2-square me-2"></i>Minhas Tarefas</h5>
+              <div class="small text-muted" id="tarefas-subtitle">Nenhuma tarefa pendente</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary rounded-pill fs-6" id="tarefas-count" style="display:none;">0</span>
+              <button class="btn btn-sm btn-outline-secondary d-none" id="tarefas-limpar-filtro">Limpar filtro</button>
+            </div>
+          </div>
+
+          <div class="progress mb-3" style="height: 4px;" id="tarefas-progress-wrap">
+            <div class="progress-bar" id="tarefas-progress" role="progressbar" style="width: 0%;"></div>
+          </div>
+
+          <div class="input-group mb-2">
+            <input type="text" id="nova-tarefa-input" class="form-control form-control-sm" placeholder="Nova tarefa..." maxlength="255">
+            <input type="date" id="nova-tarefa-data" class="form-control form-control-sm" style="max-width: 160px;">
+            <button class="btn btn-primary btn-sm" id="btn-add-tarefa">Adicionar</button>
+          </div>
+
+          <div id="tarefas-empty" class="text-center py-4 text-muted">
+            <i class="bi bi-clipboard-check d-block mb-2" style="font-size: 2rem; opacity: 0.25;"></i>
+            <p class="small mb-0">Nenhuma tarefa ainda.<br>Adicione uma acima.</p>
+          </div>
+
+          <ul class="list-unstyled mb-0" id="tarefas-lista" style="display:none;"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm overflow-hidden">
+    <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center py-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-ticket-perforated me-2"></i>Chamados Abertos</h5>
+      <a href="/task/" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+    </div>
+    <div class="card-body p-0">
+      {% if recentes %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light small">
+            <tr>
+              <th class="ps-3">#</th>
+              <th>Título</th>
+              <th>Solicitante</th>
+              <th>Prioridade</th>
+              <th class="text-center">Status</th>
+              <th class="text-end pe-3">Aberto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in recentes %}
+            <tr>
+              <td class="ps-3 text-muted font-monospace">#{{ c.id }}</td>
+              <td>
+                <a href="/task/{{ c.id }}" class="text-decoration-none fw-semibold text-dark">{{ c.titulo }}</a>
+              </td>
+              <td class="small">{{ c.funcionario.nome_completo }}</td>
+              <td>
+                <span class="badge {% if c.prioridade == 'Urgente' %}bg-danger{% elif c.prioridade == 'Alta' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ c.prioridade }}</span>
+              </td>
+              <td class="text-center">
+                {% if c.operador %}
+                <span class="badge bg-info text-white small">Em andamento</span>
+                {% else %}
+                <span class="badge bg-secondary-soft text-secondary border border-secondary small">Aguardando</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-3 text-muted small">{{ (c.criado_em|naive).strftime('%d/%m %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-inboxes display-4 d-block mb-3" style="opacity: 0.3;"></i>
+        <p class="mb-0">Nenhum chamado aberto no momento.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const lista = document.getElementById('tarefas-lista');
+  const empty = document.getElementById('tarefas-empty');
+  const input = document.getElementById('nova-tarefa-input');
+  const inputData = document.getElementById('nova-tarefa-data');
+  const btnAdd = document.getElementById('btn-add-tarefa');
+  const count = document.getElementById('tarefas-count');
+  const subtitle = document.getElementById('tarefas-subtitle');
+  const progress = document.getElementById('tarefas-progress');
+  const progressWrap = document.getElementById('tarefas-progress-wrap');
+  const btnLimparFiltro = document.getElementById('tarefas-limpar-filtro');
+  const calBody = document.getElementById('calendario-body');
+  const calTitulo = document.getElementById('cal-titulo');
+  const btnAnt = document.getElementById('cal-mes-ant');
+  const btnPos = document.getElementById('cal-mes-pos');
+
+  let tarefas = [];
+  let diaFiltro = null;
+  let calAno, calMes, calHoje, calHojeMes, calHojeAno;
+
+  function diaParaStr(ano, mes, dia) {
+    return ano + '-' + String(mes).padStart(2,'0') + '-' + String(dia).padStart(2,'0');
+  }
+
+  function carregarCalendario(ano, mes) {
+    var hoje = new Date();
+    return fetch('/api/tarefas/calendario?ano=' + ano + '&mes=' + mes + '&hoje_ano=' + hoje.getFullYear() + '&hoje_mes=' + (hoje.getMonth() + 1) + '&hoje_dia=' + hoje.getDate())
+      .then(r => r.json())
+      .then(d => {
+        calAno = d.ano;
+        calMes = d.mes;
+        calHoje = d.hoje;
+        calHojeMes = d.hoje_mes;
+        calHojeAno = d.hoje_ano;
+        renderizarCalendario(d);
+        return d;
+      });
+  }
+
+  function renderizarCalendario(d) {
+    calTitulo.textContent = d.nome_mes + ' ' + d.ano;
+    calBody.innerHTML = '';
+    d.semanas.forEach(function(semana) {
+      var tr = document.createElement('tr');
+      semana.forEach(function(dia) {
+        var td = document.createElement('td');
+        if (dia === 0) {
+          td.className = 'outro-mes';
+        } else {
+          td.textContent = dia;
+          td.dataset.dia = dia;
+          if (dia === d.hoje && d.mes === d.hoje_mes && d.ano === d.hoje_ano) {
+            td.classList.add('hoje');
+          }
+          var chave = diaParaStr(d.ano, d.mes, dia);
+          if (d.dots[chave]) {
+            var wrap = document.createElement('span');
+            wrap.className = 'cal-dot-wrap';
+            for (var i = 0; i < Math.min(d.dots[chave], 3); i++) {
+              var dot = document.createElement('span');
+              dot.className = 'cal-dot';
+              wrap.appendChild(dot);
+            }
+            td.appendChild(wrap);
+          }
+        }
+        tr.appendChild(td);
+      });
+      calBody.appendChild(tr);
+    });
+
+    // re-apply click handlers
+    Array.from(calBody.querySelectorAll('td[data-dia]')).forEach(function(td) {
+      td.addEventListener('click', function() {
+        var sel = calBody.querySelector('td.selecionado');
+        if (sel) sel.classList.remove('selecionado');
+        if (this.classList.contains('selecionado')) {
+          this.classList.remove('selecionado');
+          diaFiltro = null;
+          btnLimparFiltro.classList.add('d-none');
+        } else {
+          this.classList.add('selecionado');
+          diaFiltro = diaParaStr(calAno, calMes, parseInt(this.dataset.dia));
+          btnLimparFiltro.classList.remove('d-none');
+        }
+        renderizarTarefas();
+      });
+    });
+  }
+
+  btnAnt.addEventListener('click', function() {
+    var ano = calAno, mes = calMes - 1;
+    if (mes < 1) { mes = 12; ano--; }
+    carregarCalendario(ano, mes);
+  });
+
+  btnPos.addEventListener('click', function() {
+    var ano = calAno, mes = calMes + 1;
+    if (mes > 12) { mes = 1; ano++; }
+    carregarCalendario(ano, mes);
+  });
+
+  btnLimparFiltro.addEventListener('click', function() {
+    var sel = calBody.querySelector('td.selecionado');
+    if (sel) sel.classList.remove('selecionado');
+    diaFiltro = null;
+    btnLimparFiltro.classList.add('d-none');
+    renderizarTarefas();
+  });
+
+  function renderizarTarefas() {
+    var pendentes = tarefas.filter(function(t) { return !t.concluida; });
+    var concluidas = tarefas.filter(function(t) { return t.concluida; });
+    var total = tarefas.length;
+
+    var listaFiltrada = tarefas;
+    if (diaFiltro) {
+      listaFiltrada = tarefas.filter(function(t) { return t.data_vencimento === diaFiltro; });
+    }
+    var pendentesF = listaFiltrada.filter(function(t) { return !t.concluida; });
+    var concluidasF = listaFiltrada.filter(function(t) { return t.concluida; });
+
+    if (pendentes.length) {
+      count.style.display = 'inline';
+      count.textContent = pendentes.length;
+      subtitle.textContent = pendentes.length + ' pendente' + (pendentes.length !== 1 ? 's' : '');
+    } else {
+      count.style.display = 'none';
+      subtitle.textContent = total ? 'Todas concluídas!' : 'Nenhuma tarefa pendente';
+    }
+
+    if (total) {
+      progressWrap.style.display = 'block';
+      progress.style.width = Math.round(concluidas.length / total * 100) + '%';
+    } else {
+      progressWrap.style.display = 'none';
+      progress.style.width = '0%';
+    }
+
+    lista.innerHTML = '';
+
+    if (listaFiltrada.length === 0) {
+      empty.style.display = 'block';
+      lista.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    lista.style.display = 'block';
+
+    if (diaFiltro && pendentesF.length === 0 && concluidasF.length > 0) {
+      concluidasF.forEach(function(t) { lista.appendChild(criarItem(t, true)); });
+    } else {
+      pendentesF.forEach(function(t) { lista.appendChild(criarItem(t, false)); });
+      concluidasF.forEach(function(t) { lista.appendChild(criarItem(t, true)); });
+    }
+
+    requestAnimationFrame(function() {
+      Array.from(lista.querySelectorAll('.tarefa-item')).forEach(function(el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(6px)';
+        requestAnimationFrame(function() {
+          el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        });
+      });
+    });
+  }
+
+  function formatarData(d) {
+    if (!d) return null;
+    var partes = d.split('-');
+    return parseInt(partes[2]) + '/' + parseInt(partes[1]);
+  }
+
+  function isAtrasada(t) {
+    var hoje = new Date();
+    var hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0');
+    return t.data_vencimento && !t.concluida && t.data_vencimento < hojeStr;
+  }
+
+  function criarItem(t, isConcluida) {
+    var li = document.createElement('li');
+    var atrasada = isAtrasada(t);
+    li.className = 'tarefa-item d-flex align-items-center gap-3 py-2 px-3 rounded' +
+      (isConcluida ? ' concluida' : '') +
+      (atrasada ? ' tarefa-atrasada' : '');
+    var iniciais = t.titulo.charAt(0).toUpperCase();
+    var dataStr = t.data_vencimento ? formatarData(t.data_vencimento) : null;
+    li.innerHTML =
+      '<div class="tarefa-check-wrap">' +
+        '<input class="form-check-input tarefa-check" type="checkbox" ' + (isConcluida ? 'checked' : '') + ' data-id="' + t.id + '" id="tarefa-chk-' + t.id + '">' +
+        '<label for="tarefa-chk-' + t.id + '" class="tarefa-check-label"></label>' +
+      '</div>' +
+      '<div class="tarefa-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem; font-weight: 600;">' + iniciais + '</div>' +
+      '<div class="flex-grow-1">' +
+        '<div class="tarefa-titulo">' + escapeHtml(t.titulo) + '</div>' +
+        (dataStr ? '<div class="tarefa-data">' + (atrasada ? '<i class="bi bi-exclamation-circle me-1"></i>' : '<i class="bi bi-calendar3 me-1"></i>') + 'Vence ' + dataStr + '</div>' : '') +
+      '</div>' +
+      '<button class="btn btn-sm btn-link text-secondary delete-tarefa p-0 border-0" data-id="' + t.id + '" title="Excluir"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button>';
+    return li;
+  }
+
+  function escapeHtml(text) {
+    var d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+  }
+
+  function carregarTarefas() {
+    fetch('/api/tarefas')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        tarefas = data;
+        renderizarTarefas();
+      });
+  }
+
+  function csrfHeader() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
+
+  btnAdd.addEventListener('click', function() {
+    var titulo = input.value.trim();
+    if (!titulo) return;
+    btnAdd.disabled = true;
+    btnAdd.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    var body = { titulo: titulo };
+    if (inputData.value) body.data_vencimento = inputData.value;
+    fetch('/api/tarefas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfHeader()
+      },
+      body: JSON.stringify(body)
+    }).then(function(r) {
+      btnAdd.disabled = false;
+      btnAdd.textContent = 'Adicionar';
+      if (r.ok) { input.value = ''; inputData.value = ''; carregarTarefas(); recarregarCalendario(); }
+    }).catch(function() { btnAdd.disabled = false; btnAdd.textContent = 'Adicionar'; });
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') btnAdd.click();
+  });
+
+  function recarregarCalendario() {
+    if (calAno && calMes) carregarCalendario(calAno, calMes);
+  }
+
+  lista.addEventListener('change', function(e) {
+    if (e.target.matches('.tarefa-check')) {
+      var id = e.target.dataset.id;
+      fetch('/api/tarefas/' + id + '/toggle', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfHeader() }
+      }).then(function() { carregarTarefas(); recarregarCalendario(); });
+    }
+  });
+
+  lista.addEventListener('click', function(e) {
+    var btn = e.target.closest('.delete-tarefa');
+    if (btn) {
+      var id = btn.dataset.id;
+      fetch('/api/tarefas/' + id, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': csrfHeader() }
+      }).then(function() { carregarTarefas(); recarregarCalendario(); });
+    }
+  });
+
+  // init
+  carregarTarefas();
+  var agora = new Date();
+  carregarCalendario(agora.getFullYear(), agora.getMonth() + 1);
+});
+</script>
+{% endblock %}

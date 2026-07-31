@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Usuário{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4">
+        <a href="/user/" class="btn btn-link p-0 text-decoration-none text-muted small">← Voltar para lista</a>
+        <h1 class="h3 mt-2">Novo Usuário</h1>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Dados Profissionais e Pessoais</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/user/">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Nome Completo</label>
+                        <input class="form-control" name="nome_completo" required placeholder="Nome Completo" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Email Pessoal</label>
+                        <input class="form-control" type="email" name="email" required placeholder="email@exemplo.com" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Usuário (login)</label>
+                        <input class="form-control" name="username" required placeholder="exemplo.username" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Senha</label>
+                        <input class="form-control" type="password" name="password" placeholder="Mínimo 6 caracteres" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Setor</label>
+                        <select class="form-select select2-search" name="setor_id" id="setor" required>
+                            <option value="">Selecione o setor...</option>
+                            {% for s in setores %}
+                            <option value="{{ s.id }}">{{ s.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Cargo</label>
+                        <select class="form-select select2-search" name="cargo_id" id="cargo" required disabled>
+                            <option value="">Selecione o setor primeiro...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Nível de Acesso</label>
+                        <select class="form-select" name="tipo_acesso">
+                            <option value="usuario">Usuário (abre e vê próprios chamados)</option>
+                            <option value="tecnico">Técnico (vê todos chamados + inventário)</option>
+                            <option value="admin">Administrador (acesso total)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Tipo de Vínculo</label>
+                        <select class="form-select" name="tipo_vinculo">
+                            <option value="efetivo">Efetivo</option>
+                            <option value="freelancer">Freelancer</option>
+                            <option value="terceirizado">Terceirizado</option>
+                            <option value="estagiario">Estagiário</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Telefone Pessoal</label>
+                        <input class="form-control" name="telefone" placeholder="(00) 00000-0000" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Data de Admissão</label>
+                        <input class="form-control" type="date" name="data_admissao" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Email Corporativo</label>
+                        <input class="form-control" name="email_corporativo" placeholder="exemplo@empresa.com.br" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Observações</label>
+                        <textarea class="form-control" name="observacoes" rows="3" placeholder="Anotações internas sobre o usuário..."></textarea>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+                
+                <h6 class="mb-3 text-primary fw-bold"><i class="bi bi-shield-check me-2"></i>Onboarding & Acessos</h6>
+                
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Perfil Intelbras (Acesso Físico)</label>
+                        <input class="form-control" name="perfil_intelbras" placeholder="Ex: Acesso Total" />
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">Checklist de TI</label>
+                        <div class="d-flex flex-wrap gap-3 p-3 bg-light border rounded">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="acesso_ad" value="1" id="acesso_ad" />
+                                <label class="form-check-label fw-medium" for="acesso_ad">Cadastro no AD</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="acesso_sistema" value="1" id="acesso_sistema" />
+                                <label class="form-check-label fw-medium" for="acesso_sistema">Acesso no Sistema</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="acesso_sharepoint" value="1" id="acesso_sharepoint" />
+                                <label class="form-check-label fw-medium" for="acesso_sharepoint">Sharepoint</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="biometria_dedo" value="1" id="biometria_dedo" />
+                                <label class="form-check-label fw-medium" for="biometria_dedo">Biometria Digital</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="biometria_facial" value="1" id="biometria_facial" />
+                                <label class="form-check-label fw-medium" for="biometria_facial">Biometria Facial</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                        <i class="bi bi-save me-2"></i>Salvar Novo Usuário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Lógica para carregar cargos dinamicamente conforme o setor
+    document.getElementById('setor').addEventListener('change', function() {
+      const setorId = this.value;
+      const selectCargo = document.getElementById('cargo');
+
+      if (setorId) {
+        selectCargo.disabled = false;
+        fetch('/user/buscar-cargos?setor_id=' + setorId)
+          .then(response => response.text())
+          .then(html => {
+            selectCargo.innerHTML = html;
+          })
+          .catch(error => {
+            console.error('Erro ao buscar cargos:', error);
+            selectCargo.innerHTML = '<option value="">Erro ao carregar cargos</option>';
+          });
+      } else {
+        selectCargo.disabled = true;
+        selectCargo.innerHTML = '<option value="">Selecione o setor primeiro...</option>';
+      }
+    });
+</script>
+{% endblock %}

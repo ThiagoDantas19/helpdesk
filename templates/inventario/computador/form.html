@@ -1,0 +1,193 @@
+{% extends "base.html" %} {% block title %}Novo Computador - HelpDesk{% endblock
+%} {% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 fw-bold">Cadastrar Novo Computador</h1>
+      <p class="text-muted mb-0">
+        Registre o hardware e vincule ao inventário patrimonial.
+      </p>
+    </div>
+    <a href="/inventario/computador/" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+          <form method="POST" action="/inventario/computador/">
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-tag me-2"></i>Informações Patrimoniais
+                </h6>
+              </div>
+
+              <div class="col-md-4">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Código da Etiqueta</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="codigo_etiqueta"
+                  placeholder="Ex: 0542"
+                  maxlength="4"
+                  pattern="[0-9]{1,4}"
+                  inputmode="numeric"
+                  required
+                />
+              </div>
+
+              <div class="col-md-8">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Nome Identificador</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="nome_identificador"
+                  placeholder="Ex: Notebook Dell Latitude - TI"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-pc-display me-2"></i>Especificações do
+                  Hardware
+                </h6>
+              </div>
+
+              <div class="col-md-3">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Service Tag / Modelo</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="tag"
+                  placeholder="Ex: Optiplex 3080"
+                  required
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Hostname (AD)</label
+                >
+                <input
+                  type="text"
+                  class="form-control font-monospace"
+                  name="nome_ad"
+                  placeholder="DESKTOP-TI-01"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Número de Série</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="numero_serie"
+                  placeholder="S/N do Fabricante"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Data de Fabricação</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  name="data_fabricacao"
+                />
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-person-badge me-2"></i>Localização e
+                  Responsável
+                </h6>
+              </div>
+
+              <div class="col-md-6">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Setor Destino</label
+                >
+                <select class="form-select select2-search" name="setor_id" required>
+                  <option value="">Selecione o setor...</option>
+                  {% for s in setores %}
+                  <option value="{{ s.id }}">{{ s.nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Responsável Atual</label
+                >
+                <select class="form-select select2-search" name="responsavel_id">
+                  <option value="">Sem responsável</option>
+                  {% for u in usuarios %}
+                  <option value="{{ u.id }}" data-setor="{{ u.setor_id }}">{{ u.nome_completo }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-card-text me-2"></i>Observações
+                </h6>
+              </div>
+              <div class="col-12">
+                <textarea
+                  class="form-control"
+                  name="observacoes"
+                  rows="3"
+                  placeholder="Detalhes técnicos adicionais (RAM, SSD, Acessórios)..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div
+              class="d-flex justify-content-end align-items-center pt-3 border-top"
+            >
+              <a
+                href="/inventario/computador/"
+                class="btn btn-link text-secondary me-3 text-decoration-none"
+                >Cancelar</a
+              >
+              <button
+                type="submit"
+                class="btn btn-primary px-5 fw-bold shadow-sm"
+              >
+                <i class="bi bi-check-lg"></i> Cadastrar Computador
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

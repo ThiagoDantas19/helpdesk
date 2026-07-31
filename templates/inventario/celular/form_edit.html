@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Celular: {{ celular.modelo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
+          <li class="breadcrumb-item"><a href="/inventario/celular/" class="text-decoration-none">Celulares</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Editar</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-1 fw-bold">Editar Aparelho</h1>
+      <p class="text-muted mb-0">Atualize as especificações técnicas ou os vínculos de responsabilidade.</p>
+    </div>
+    <a href="/inventario/celular/{{ celular.patrimonio.id }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Voltar aos Detalhes
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+          
+          <form method="POST" action="/inventario/celular/{{ celular.patrimonio.id }}/update">
+            
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-phone me-2"></i>Identificação do Dispositivo
+                </h6>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted text-uppercase">Património (Etiqueta)</label>
+                <input type="text" class="form-control" name="patrimonio" value="{{ celular.patrimonio.codigo_etiqueta or '' }}" maxlength="4" pattern="[0-9]{1,4}" inputmode="numeric" required>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small fw-bold text-muted text-uppercase">Modelo do Aparelho</label>
+                <input type="text" class="form-control" name="modelo" value="{{ celular.modelo }}" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Número de Série (S/N)</label>
+                <input type="text" class="form-control font-monospace" name="numero_serie" value="{{ celular.numero_serie or '' }}">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-person-badge me-2"></i>Atribuição Atual
+                </h6>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted text-uppercase">Setor Destino</label>
+                <select class="form-select select2-search" name="setor_id">
+                  <option value="">Selecione um setor...</option>
+                  {% for s in setores %}
+                    <option value="{{ s.id }}" {% if celular.patrimonio.setor and celular.patrimonio.setor.id == s.id %}selected{% endif %}>
+                      {{ s.nome }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted text-uppercase">Responsável Atual</label>
+                <select class="form-select select2-search" name="responsavel_id">
+                  <option value="">Deixar em stock (Disponível)</option>
+                  {% for u in usuarios %}
+                    <option value="{{ u.id }}" data-setor="{{ u.setor_id }}" {% if celular.patrimonio.responsavel and celular.patrimonio.responsavel.id == u.id %}selected{% endif %}>
+                      {{ u.nome_completo }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-shield-lock me-2"></i>Contas Vinculadas
+                </h6>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">E-mail de Backup</label>
+                <input type="email" class="form-control" name="email_vinculado" value="{{ celular.email_vinculado or '' }}">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Senha Google</label>
+                <input type="text" class="form-control" name="senha_google" value="{{ celular.senha_google_plain() or '' }}">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Senha iCloud</label>
+                <input type="text" class="form-control" name="senha_icloud" value="{{ celular.senha_icloud_plain() or '' }}">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-card-text me-2"></i>Status e Notas
+                </h6>
+              </div>
+              
+              <div class="col-md-9">
+                <label class="form-label small fw-bold text-muted text-uppercase">Observações Internas</label>
+                <textarea class="form-control" name="observacoes" rows="3">{{ celular.patrimonio.observacoes or '' }}</textarea>
+              </div>
+
+              <div class="col-md-3 d-flex align-items-center justify-content-center">
+                <div class="form-check form-switch mt-3">
+                  <input class="form-check-input" type="checkbox" name="ativo" id="statusAtivo" value="1" {% if celular.patrimonio.ativo %}checked{% endif %}>
+                  <label class="form-check-label fw-bold text-muted" for="statusAtivo">APARELHO ATIVO</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+              <span class="text-muted small">ID Património: #{{ celular.patrimonio.id }}</span>
+              <div>
+                <a href="/inventario/celular/" class="btn btn-link text-secondary me-3 text-decoration-none">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow-sm">
+                  <i class="bi bi-save me-2"></i>Atualizar Registro
+                </button>
+              </div>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

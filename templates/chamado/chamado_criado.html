@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Chamado Criado</title>
+  </head>
+  <body>
+    <h1>Chamado criado</h1>
+    <p>ID: {{ chamado.id }}</p>
+    <p>Solicitante: {{ chamado.funcionario.nome_completo if chamado and chamado.funcionario else 'N/A' }}</p>
+  </body>
+  </html>

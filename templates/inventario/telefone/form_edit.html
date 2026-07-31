@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Ramal: {{ telefone.ramal }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
+          <li class="breadcrumb-item"><a href="/inventario/telefone/" class="text-decoration-none">Telefones</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Editar</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-1 fw-bold">Editar Telefone IP</h1>
+      <p class="text-muted mb-0">Atualizando ramal {{ telefone.ramal }}</p>
+    </div>
+        <a href="/inventario/telefone/{{ telefone.patrimonio.id }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <form method="POST" action="/inventario/telefone/{{ telefone.patrimonio.id }}/update">
+                        <div class="row g-3 mb-4 border-bottom pb-4">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Patrimônio</label>
+                                <input type="text" class="form-control" name="patrimonio" value="{{ telefone.patrimonio.codigo_etiqueta or '' }}" maxlength="4" pattern="[0-9]{1,4}" inputmode="numeric" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Ramal</label>
+                                <input type="text" class="form-control" name="ramal" value="{{ telefone.ramal }}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Modelo</label>
+                                <input type="text" class="form-control" name="modelo" value="{{ telefone.modelo or '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">TAG</label>
+                                <input type="text" class="form-control" name="tag" value="{{ telefone.tag or '' }}">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Setor</label>
+                                <select class="form-select select2-search" name="setor_id">
+                                    <option value="">Selecione...</option>
+                                    {% for s in setores %}
+                                    <option value="{{ s.id }}" {% if telefone.patrimonio.setor and telefone.patrimonio.setor.id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Responsável</label>
+                                <select class="form-select select2-search" name="responsavel_id">
+                                    <option value="">Selecione...</option>
+                                    {% for u in usuarios %}
+                                    <option value="{{ u.id }}" data-setor="{{ u.setor_id }}" {% if telefone.patrimonio.responsavel and telefone.patrimonio.responsavel.id == u.id %}selected{% endif %}>{{ u.nome_completo }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Observações</label>
+                                <textarea class="form-control" name="observacoes" rows="3">{{ telefone.patrimonio.observacoes or '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 border-top pt-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="ativo" value="1" id="ativo" {% if telefone.patrimonio.ativo %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="ativo">Equipamento em Operação</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end align-items-center pt-3 border-top">
+              <a href="/inventario/telefone/" class="btn btn-link text-secondary me-3 text-decoration-none">Cancelar</a>
+              <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                <i class="bi bi-check-lg me-2"></i> Atualizar Telefone
+              </button>
+            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

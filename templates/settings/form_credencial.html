@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if credencial else 'Nova' }} Credencial - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2 small">
+          <li class="breadcrumb-item"><a href="/settings/" class="text-decoration-none">Configurações</a></li>
+          <li class="breadcrumb-item"><a href="/settings/credencial/" class="text-decoration-none">Credenciais</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ 'Editar' if credencial else 'Nova' }}</li>
+        </ol>
+      </nav>
+
+      <h1 class="h3 fw-bold mb-4">{{ 'Editar Credencial' if credencial else 'Nova Credencial' }}</h1>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="POST"
+                action="{{ '/settings/credencial/%d/update' % credencial.id if credencial else '/settings/credencial/' }}">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="titulo" class="form-label fw-medium">Título</label>
+                <input type="text" class="form-control" id="titulo" name="titulo" required
+                       value="{{ credencial.titulo if credencial else '' }}"
+                       placeholder="Ex: AWS Root, GitHub, Email TI...">
+              </div>
+              <div class="col-md-6">
+                <label for="url" class="form-label fw-medium">URL</label>
+                <input type="url" class="form-control" id="url" name="url"
+                       value="{{ credencial.url if credencial and credencial.url else '' }}"
+                       placeholder="https://...">
+              </div>
+              <div class="col-md-6">
+                <label for="username" class="form-label fw-medium">Usuário</label>
+                <input type="text" class="form-control" id="username" name="username" required
+                       value="{{ credencial.username if credencial else '' }}"
+                       placeholder="usuário ou email">
+              </div>
+              <div class="col-md-6">
+                <label for="senha" class="form-label fw-medium">
+                  Senha{% if credencial %}<small class="text-muted fw-normal"> (deixe em branco para manter)</small>{% endif %}
+                </label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="senha" name="senha"
+                         {{ 'required' if not credencial else '' }}
+                         placeholder="••••••••">
+                  <button class="btn btn-outline-secondary" type="button" id="toggleSenha" title="Mostrar/ocultar">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" type="button" id="gerarSenha" title="Gerar senha forte">
+                    <i class="bi bi-dice-5"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-12">
+                <label for="observacao" class="form-label fw-medium">Observação</label>
+                <textarea class="form-control" id="observacao" name="observacao" rows="3"
+                          placeholder="Informações adicionais...">{{ credencial.observacao if credencial and credencial.observacao else '' }}</textarea>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary fw-bold">{{ 'Salvar' if credencial else 'Criar' }}</button>
+              <a href="/settings/credencial/" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('toggleSenha')?.addEventListener('click', function() {
+  var input = document.getElementById('senha');
+  var icon = this.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'bi bi-eye-slash';
+  } else {
+    input.type = 'password';
+    icon.className = 'bi bi-eye';
+  }
+});
+document.getElementById('gerarSenha')?.addEventListener('click', function() {
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+  var senha = '';
+  for (var i = 0; i < 24; i++) {
+    senha += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  document.getElementById('senha').value = senha;
+  document.getElementById('senha').type = 'text';
+  document.getElementById('toggleSenha').querySelector('i').className = 'bi bi-eye-slash';
+});
+</script>
+{% endblock %}

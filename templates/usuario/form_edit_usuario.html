@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4">
+        <a href="/user/{{ usuario.id }}" class="btn btn-link p-0 text-decoration-none text-muted">← Cancelar e Voltar</a>
+        <h1 class="h3 mt-2">Editar: {{ usuario.nome_completo }}</h1>
+    </div>
+
+    <form method="post" action="/user/{{ usuario.id }}/update">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold">Informações Cadastrais</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">NOME COMPLETO</label>
+                                <input class="form-control" name="nome_completo" value="{{ usuario.nome_completo }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted">EMAIL PESSOAL</label>
+                                <input class="form-control" type="email" name="email" value="{{ usuario.email }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">USUÁRIO (LOGIN)</label>
+                                <input class="form-control" name="username" value="{{ usuario.username or '' }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">NOVA SENHA</label>
+                                <input class="form-control" type="password" name="password" placeholder="Deixe em branco para manter">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">TIPO DE VÍNCULO</label>
+                                <select class="form-select" name="tipo_vinculo">
+                                    <option value="efetivo" {% if usuario.tipo_vinculo == 'efetivo' %}selected{% endif %}>Efetivo</option>
+                                    <option value="freelancer" {% if usuario.tipo_vinculo == 'freelancer' %}selected{% endif %}>Freelancer</option>
+                                    <option value="terceirizado" {% if usuario.tipo_vinculo == 'terceirizado' %}selected{% endif %}>Terceirizado</option>
+                                    <option value="estagiario" {% if usuario.tipo_vinculo == 'estagiario' %}selected{% endif %}>Estagiário</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">TELEFONE</label>
+                                <input class="form-control" name="telefone" value="{{ usuario.telefone or '' }}" placeholder="(00) 00000-0000">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">SETOR</label>
+                                <select class="form-select select2-search" name="setor_id" id="setor" required>
+                                    {% for s in setores %}
+                                    <option value="{{ s.id }}" {% if usuario.setor.id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">CARGO</label>
+                                <select class="form-select select2-search" name="cargo_id" id="cargo" required>
+                                    {% for c in cargos %}
+                                    <option value="{{ c.id }}" {% if usuario.cargo.id == c.id %}selected{% endif %}>{{ c.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">NÍVEL DE ACESSO</label>
+                                <select class="form-select" name="tipo_acesso">
+                                    <option value="usuario" {% if usuario.tipo_acesso == 'usuario' %}selected{% endif %}>Usuário</option>
+                                    <option value="tecnico" {% if usuario.tipo_acesso == 'tecnico' %}selected{% endif %}>Técnico</option>
+                                    <option value="admin" {% if usuario.tipo_acesso == 'admin' %}selected{% endif %}>Administrador</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">DATA DE ADMISSÃO</label>
+                                <input class="form-control" type="date" name="data_admissao" value="{{ usuario.data_admissao }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">EMAIL CORPORATIVO</label>
+                                <input class="form-control" name="email_corporativo" value="{{ usuario.email_corporativo or '' }}" placeholder="exemplo@empresa.com.br">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">PERFIL INTELBRAS</label>
+                                <input class="form-control" name="perfil_intelbras" value="{{ usuario.perfil_intelbras or '' }}" placeholder="Ex: Acesso Total">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">OBSERVAÇÕES</label>
+                                <textarea class="form-control" name="observacoes" rows="3" placeholder="Anotações internas sobre o usuário...">{{ usuario.observacoes or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold"><i class="bi bi-shield-check me-2 text-primary"></i>Onboarding & Acessos</div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-3 p-3 bg-light border rounded">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="acesso_ad" value="1" id="acesso_ad" {% if usuario.acesso_ad %}checked{% endif %}>
+                                <label class="form-check-label fw-medium" for="acesso_ad">Cadastro no AD</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="acesso_sistema" value="1" id="acesso_sistema" {% if usuario.acesso_sistema %}checked{% endif %}>
+                                <label class="form-check-label fw-medium" for="acesso_sistema">Acesso no Sistema</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="acesso_sharepoint" value="1" id="acesso_sharepoint" {% if usuario.acesso_sharepoint %}checked{% endif %}>
+                                <label class="form-check-label fw-medium" for="acesso_sharepoint">Sharepoint</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="biometria_dedo" value="1" id="biometria_dedo" {% if usuario.biometria_dedo %}checked{% endif %}>
+                                <label class="form-check-label fw-medium" for="biometria_dedo">Biometria Digital</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="biometria_facial" value="1" id="biometria_facial" {% if usuario.biometria_facial %}checked{% endif %}>
+                                <label class="form-check-label fw-medium" for="biometria_facial">Biometria Facial</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold text-danger">Status da Conta</div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="ativo" value="1" id="st_ativo" {% if usuario.ativo %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="st_ativo">Usuário Ativo</label>
+                        </div>
+                        <label class="form-label small text-muted">DATA DESLIGAMENTO</label>
+                        <input type="date" class="form-control" name="data_desligamento" value="{{ usuario.data_desligamento }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-5 shadow mt-3"><i class="bi bi-save me-2"></i>Atualizar Cadastro</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('setor').addEventListener('change', function() {
+        const sectorId = this.value;
+        const cargoSelect = document.getElementById('cargo');
+        fetch(`/user/buscar-cargos?setor_id=${sectorId}`)
+            .then(r => r.text())
+            .then(html => cargoSelect.innerHTML = html);
+    });
+</script>
+{% endblock %}

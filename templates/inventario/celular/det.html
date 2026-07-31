@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block title %}Detalhes: {{ celular.modelo }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
+          <li class="breadcrumb-item"><a href="/inventario/celular/" class="text-decoration-none">Celulares</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ celular.patrimonio.codigo_etiqueta or 'S/E' }}</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-0 fw-bold">{{ celular.modelo }}</h1>
+    </div>
+    <a href="/inventario/celular/" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+      <i class="bi bi-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold text-secondary">Especificações do Dispositivo</h5>
+          {% if celular.patrimonio.ativo %}
+            <span class="badge rounded-pill bg-success-soft text-success border border-success px-3" style="background-color: #ecfdf5">Ativo</span>
+          {% else %}
+            <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3">Inativo</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Patrimônio (Etiqueta)</label>
+              <p class="fs-5 fw-bold mb-0 text-primary">{{ celular.patrimonio.codigo_etiqueta or 'S/E' }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Modelo</label>
+              <p class="fs-5 fw-bold mb-0 text-dark">{{ celular.modelo }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Número de Série / IMEI</label>
+              <p class="mb-0 font-monospace text-secondary">{{ celular.numero_serie or '—' }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">E-mail Vinculado</label>
+              <p class="mb-0">{{ celular.email_vinculado or '—' }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Senha Google</label>
+              <div class="input-group input-group-sm" style="max-width: 260px">
+                <input type="text" class="form-control form-control-sm bg-white" value="{{ celular.senha_google_plain() or '—' }}" readonly />
+                <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ celular.senha_google_plain() or '' }}')"><i class="bi bi-clipboard"></i></button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Senha iCloud</label>
+              <div class="input-group input-group-sm" style="max-width: 260px">
+                <input type="text" class="form-control form-control-sm bg-white" value="{{ celular.senha_icloud_plain() or '—' }}" readonly />
+                <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ celular.senha_icloud_plain() or '' }}')"><i class="bi bi-clipboard"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-telephone me-2"></i>Linhas Vinculadas</h6>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">NÚMERO</th>
+                <th>OPERADORA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for linha in linhas %}
+              <tr>
+                <td class="ps-3 fw-bold">{{ linha.numero }}</td>
+                <td><span class="badge bg-light text-dark border">{{ linha.operadora }}</span></td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="2" class="text-center py-4 text-muted small">Nenhuma linha vinculada a este aparelho.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-camera me-2"></i>Fotos do Equipamento</h6>
+          {% if current_user.tipo_acesso == 'admin' %}
+          <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('foto-input-cel').click()">
+            <i class="bi bi-upload"></i>
+          </button>
+          <form action="/inventario/item/{{ celular.patrimonio.id }}/foto" method="POST" enctype="multipart/form-data" style="display:none">
+            <input id="foto-input-cel" type="file" name="fotos" multiple accept="image/*,.mp4,.webm,.avi,.mkv,.mov" onchange="this.form.submit()">
+          </form>
+          {% endif %}
+        </div>
+        <div class="card-body px-4 py-3">
+          {% if fotos %}
+          <div class="row g-2">
+            {% for f in fotos %}
+            <div class="col-4 col-md-3">
+              <div class="position-relative border rounded p-1 text-center" style="background:#fafafa">
+                {% if f.mimetype.startswith('image/') %}
+                <img src="/inventario/uploads/{{ f.stored_filename }}" class="img-fluid rounded" style="max-height:80px;object-fit:cover;cursor:pointer"
+                     onclick="abrirLightbox('/inventario/uploads/{{ f.stored_filename }}', '{{ f.filename }}')" loading="lazy">
+                {% else %}
+                <div class="py-2"><i class="bi bi-film text-muted"></i></div>
+                {% endif %}
+                {% if current_user.tipo_acesso == 'admin' %}
+                <button class="btn btn-sm btn-outline-danger border-0 position-absolute top-0 end-0 py-0 px-1"
+                        c-delete="/inventario/foto-item/{{ f.id }}/delete"
+                        c-redirect="/inventario/celular/{{ celular.patrimonio.id }}">&times;</button>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0">Nenhuma foto vinculada.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <h5 class="mb-3 fw-bold text-secondary"><i class="bi bi-headset me-2"></i>Histórico de Chamados</h5>
+      <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">Nº</th>
+                <th>TÍTULO / ASSUNTO</th>
+                <th>DATA</th>
+                <th class="text-center">STATUS</th>
+                <th class="text-end pe-3">AÇÃO</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for chamado in chamados %}
+              <tr>
+                <td class="ps-3 fw-bold text-primary">#{{ chamado.id }}</td>
+                <td>
+                  <div class="fw-bold">{{ chamado.titulo }}</div>
+                  <div class="text-muted small">{{ chamado.categoria or 'Geral' }}</div>
+                </td>
+                <td class="small text-muted">{{ chamado.criado_em.strftime('%d/%m/%Y') }}</td>
+                <td class="text-center">
+                  {% if chamado.status == 'aberto' %}
+                    <span class="badge bg-primary text-white border-0">Aberto</span>
+                  {% elif chamado.status == 'fechado' %}
+                    <span class="badge bg-success text-white border-0">Concluído</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark border-0">{{ chamado.status | capitalize }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-end pe-3">
+                  <a href="/task/{{ chamado.id }}" class="btn btn-sm btn-outline-secondary border-0">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                  </a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted">
+                  <i class="bi bi-headset d-block fs-2 mb-2 text-light"></i>
+                  Nenhum chamado registrado para este celular.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="mb-0 fw-bold text-secondary"><i class="bi bi-geo-alt me-2 text-primary"></i>Atribuição</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase d-block mb-1">Setor</label>
+            <span class="badge bg-primary fs-6">{{ celular.patrimonio.setor.nome if celular.patrimonio.setor else 'Não definido' }}</span>
+          </div>
+          <div class="mb-0">
+            <label class="text-muted small fw-bold text-uppercase d-block mb-2">Usuário Responsável</label>
+            {% if celular.patrimonio.responsavel %}
+              <div class="d-flex align-items-center p-3 border rounded bg-light">
+                <i class="bi bi-person-circle text-primary fs-4 me-3"></i>
+                <div>
+                  <p class="mb-0 fw-bold text-dark">{{ celular.patrimonio.responsavel.nome_completo }}</p>
+                  <small class="text-muted">{{ celular.patrimonio.responsavel.cargo.nome if celular.patrimonio.responsavel.cargo else '' }}</small>
+                </div>
+              </div>
+            {% else %}
+              <div class="text-muted small p-3 border border-dashed rounded text-center bg-light">
+                <i class="bi bi-person-x me-1"></i>SEM VÍNCULO
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-sticky me-2"></i>Observações Técnicas</h6>
+          <div class="p-3 bg-light rounded small text-secondary border">
+            {{ celular.patrimonio.observacoes or 'Nenhuma observação registrada.' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-clipboard-check me-2"></i>Auditoria</h6>
+          {% if current_user.tipo_acesso == 'admin' %}
+          <a href="/inventario/celular/{{ celular.patrimonio.id }}/auditar" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-plus-circle"></i>
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if ultima_auditoria %}
+            <div class="text-center mb-3">
+              <span class="badge bg-{{ 'success' if ultima_auditoria.status_geral_ok else 'danger' }} fs-6 px-3 py-2">
+                {{ 'APROVADO' if ultima_auditoria.status_geral_ok else 'REPROVADO' }}
+              </span>
+            </div>
+            <div class="small text-muted mb-2">
+              <i class="bi bi-calendar3 me-1"></i> {{ ultima_auditoria.data_auditoria.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            {% if ultima_auditoria.observacoes %}
+            <div class="p-2 bg-light rounded small text-secondary border mb-2">
+              {{ ultima_auditoria.observacoes }}
+            </div>
+            {% endif %}
+          {% else %}
+            <p class="text-muted small mb-2">Nenhuma auditoria registrada.</p>
+          {% endif %}
+          <a href="/inventario/celular/{{ celular.patrimonio.id }}/auditorias" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+            <i class="bi bi-clock-history me-1"></i> Histórico Completo
+          </a>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <a href="/inventario/celular/{{ celular.patrimonio.id }}/edit" class="btn btn-primary shadow-sm py-2 fw-bold">
+          <i class="bi bi-pencil-square me-2"></i>Editar Aparelho
+        </a>
+        <button class="btn btn-outline-danger border-0 py-2"
+                c-delete="/inventario/celular/{{ celular.patrimonio.id }}/delete"
+                c-redirect="/inventario/celular/">
+          <i class="bi bi-trash me-2"></i>Excluir Registro
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

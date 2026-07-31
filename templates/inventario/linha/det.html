@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Linha {{ linha.numero }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
+          <li class="breadcrumb-item"><a href="/inventario/linha/" class="text-decoration-none">Linhas</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ linha.numero }}</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-0 fw-bold">Linha {{ linha.numero }}</h1>
+    </div>
+    <a href="/inventario/linha/" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+      <i class="bi bi-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h5 class="mb-0 fw-bold text-secondary"><i class="bi bi-info-circle me-2"></i>Detalhes da Linha</h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Número</label>
+              <p class="fs-5 fw-bold mb-0 text-primary">{{ linha.numero }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Operadora</label>
+              <p class="fs-5 fw-bold mb-0 text-dark">{{ linha.operadora }}</p>
+            </div>
+            <div class="col-md-6">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Aparelho Vinculado</label>
+              <p class="mb-0">{{ linha.celular.patrimonio.nome_identificador if linha.celular else 'Nenhum' }}</p>
+            </div>
+            <div class="col-12">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Observações</label>
+              <p class="mb-0">{{ linha.observacoes or '—' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-sticky me-2"></i>Informações Gerais</h6>
+          <div class="p-3 bg-light rounded small text-secondary border">
+            Linha registrada no sistema para gestão de telefonia móvel corporativa.
+          </div>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <a href="/inventario/linha/{{ linha.id }}/edit" class="btn btn-primary shadow-sm py-2 fw-bold">
+          <i class="bi bi-pencil-square me-2"></i>Editar Linha
+        </a>
+        <button class="btn btn-outline-danger border-0 py-2"
+                c-delete="/inventario/linha/{{ linha.id }}/delete"
+                c-redirect="/inventario/linha/"
+                onclick="return confirm('Tem certeza que deseja excluir permanentemente este registro?')">
+          <i class="bi bi-trash me-2"></i>Excluir Registro
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

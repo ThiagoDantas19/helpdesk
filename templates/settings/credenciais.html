@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Credenciais - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/settings/" class="text-decoration-none">Configurações</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Credenciais</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-0 fw-bold">Cofre de Senhas</h1>
+    </div>
+    <a href="/settings/credencial/new" class="btn btn-primary d-flex align-items-center shadow-sm fw-bold">
+      <i class="bi bi-plus-lg me-1"></i> Nova Credencial
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3" style="width: 80px;">ID</th>
+            <th>TÍTULO</th>
+            <th>URL</th>
+            <th>USUÁRIO</th>
+            <th>SENHA</th>
+            <th class="text-end pe-3">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in credenciais %}
+          <tr>
+            <td class="ps-3 text-muted font-monospace">#{{ c.id }}</td>
+            <td class="fw-medium">{{ c.titulo }}</td>
+            <td>
+              {% if c.url %}
+              <a href="{{ c.url }}" target="_blank" class="text-decoration-none small">
+                <i class="bi bi-box-arrow-up-right me-1"></i>{{ c.url[:40] }}{{ '...' if c.url|length > 40 }}
+              </a>
+              {% else %}
+              <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td><code>{{ c.username }}</code></td>
+            <td>
+              <button class="btn btn-sm btn-outline-secondary border-0 reveal-btn"
+                      data-id="{{ c.id }}" title="Revelar senha">
+                <i class="bi bi-eye"></i>
+              </button>
+              <span class="senha-revelada d-none small font-monospace" id="senha-{{ c.id }}"></span>
+              <button class="btn btn-sm btn-outline-info border-0 d-none copy-btn"
+                      data-id="{{ c.id }}" title="Copiar senha">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </td>
+            <td class="text-end pe-3">
+              <div class="btn-group">
+                <a href="/settings/credencial/{{ c.id }}/edit" class="btn btn-sm btn-outline-primary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                <button class="btn btn-sm btn-outline-danger border-0" title="Excluir"
+                        c-delete="/settings/credencial/{{ c.id }}/delete"
+                        c-redirect="/settings/credencial/"
+                        onclick="return confirm('Excluir credencial &#39;{{ c.titulo }}&#39;?')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-5">
+              <i class="bi bi-key text-muted display-4 d-block mb-3"></i>
+              <p class="text-muted mb-0">Nenhuma credencial cadastrada.</p>
+              <a href="/settings/credencial/new" class="btn btn-sm btn-link mt-2">Cadastrar agora</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.reveal-btn').forEach(function(btn) {
+  btn.addEventListener('click', async function() {
+    var id = this.dataset.id;
+    var span = document.getElementById('senha-' + id);
+    var copyBtn = span.nextElementSibling;
+    if (span.classList.contains('d-none')) {
+      var resp = await fetch('/settings/credencial/' + id + '/reveal', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': cruCsrfToken() }
+      });
+      var data = await resp.json();
+      span.textContent = data.senha || '';
+      span.classList.remove('d-none');
+      copyBtn.classList.remove('d-none');
+      this.classList.add('d-none');
+    }
+  });
+});
+document.querySelectorAll('.copy-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var id = this.dataset.id;
+    var senha = document.getElementById('senha-' + id).textContent;
+    navigator.clipboard.writeText(senha).then(function() {
+      cruToast('Senha copiada!', 'success');
+    }).catch(function() {
+      cruToast('Erro ao copiar.', 'danger');
+    });
+  });
+});
+</script>
+{% endblock %}

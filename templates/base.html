@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-br" data-bs-theme="{{ 'dark' if request.cookies.get('theme') == 'dark' else 'light' }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="session-time" content="{{ session.get('login_time', '') }}">
+  <title>{% block title %}HelpDesk IT{% endblock %}</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css">
+  
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <span class="fw-bold">HelpDesk</span>
+      </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.path.startswith('/task/') else '' }}" href="/task/">Chamados</a>
+          </li>
+          {% if current_user.tipo_acesso in ('admin', 'tecnico') %}
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.path.startswith('/inventario/') else '' }}" href="/inventario/">Inventário</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.path.startswith('/emprestimo/') else '' }}" href="/emprestimo/">Empréstimos</a>
+          </li>
+          {% endif %}
+          {% if current_user.tipo_acesso == 'admin' %}
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.path.startswith('/user/') else '' }}" href="/user/">Usuários</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.path.startswith('/settings/') else '' }}" href="/settings/">Configurações</a>
+          </li>
+          {% endif %}
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          {% if current_user.is_authenticated %}
+            <button class="btn btn-sm btn-outline-light border-0" id="darkModeToggle" title="Alternar tema">
+              <i class="bi {{ 'bi-sun-fill' if request.cookies.get('theme') == 'dark' else 'bi-moon-fill' }}" id="darkModeIcon"></i>
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-light border-0 dropdown-toggle d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle"></i>
+                <span>{{ current_user.nome_completo.split()[:2]|join(' ') }}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 220px;">
+                <li>
+                  <div class="dropdown-item-text">
+                    <div class="fw-bold">{{ current_user.nome_completo }}</div>
+                    <small class="text-muted">{{ current_user.email }}</small>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <div class="dropdown-item-text d-flex justify-content-between">
+                    <span class="text-muted small">Sessão</span>
+                    <span class="small font-monospace" id="session-time">--</span>
+                  </div>
+                </li>
+                <li>
+                  <div class="dropdown-item-text d-flex justify-content-between">
+                    <span class="text-muted small">Acesso</span>
+                    <span class="small text-capitalize">{{ current_user.tipo_acesso }}</span>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item text-danger" href="/logout">
+                    <i class="bi bi-box-arrow-right me-2"></i>Sair
+                  </a>
+                </li>
+              </ul>
+            </div>
+          {% endif %}
+          <a href="/task/new" class="btn btn-primary shadow-sm border-0">+ Novo Chamado</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="/static/cru.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var token = cruCsrfToken();
+    if (token) {
+      document.querySelectorAll('form:not(.c-form)').forEach(function(form) {
+        if (form.method && form.method.toUpperCase() === 'POST') {
+          var input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'csrf_token';
+          input.value = token;
+          form.appendChild(input);
+        }
+      });
+    }
+  });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const html = document.documentElement;
+      const toggle = document.getElementById('darkModeToggle');
+      const icon = document.getElementById('darkModeIcon');
+
+      function setTheme(theme) {
+          html.setAttribute('data-bs-theme', theme);
+          icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+          document.cookie = 'theme=' + theme + ';path=/;max-age=' + (365 * 24 * 60 * 60);
+      }
+
+      if (toggle) {
+          toggle.addEventListener('click', function() {
+              const current = html.getAttribute('data-bs-theme');
+              setTheme(current === 'dark' ? 'light' : 'dark');
+          });
+      }
+
+      document.querySelectorAll('select.select2').forEach(function(el) {
+          new Select2(el, { theme: 'bootstrap-5', width: '100%', allowClear: true });
+      });
+      document.querySelectorAll('select.select2-search').forEach(function(el) {
+          new Select2(el, { theme: 'bootstrap-5', width: '100%', allowClear: true, placeholder: el.options[0]?.text || 'Selecione...' });
+      });
+      document.querySelectorAll('.alert-dismissible').forEach(function(el) {
+          setTimeout(function() {
+              var bsAlert = new bootstrap.Alert(el);
+              bsAlert.close();
+          }, 5000);
+      });
+  });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

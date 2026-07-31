@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Empréstimo #{{ emp.id }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a href="/emprestimo/" class="btn btn-link p-0 text-decoration-none text-muted small">← Voltar para lista</a>
+      <h1 class="h3 mb-0">Empréstimo #{{ emp.id }}</h1>
+    </div>
+    <div class="d-flex gap-2">
+      {% if not emp.data_devolucao %}
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#devolverModal">
+        <i class="bi bi-arrow-return-left me-1"></i> Registrar Devolução
+      </button>
+      {% endif %}
+      <form method="post" action="/emprestimo/{{ emp.id }}/delete" style="display:inline" onsubmit="return confirm('Excluir este registro definitivamente?')">
+        <button type="submit" class="btn btn-outline-danger">
+          <i class="bi bi-trash me-1"></i> Excluir
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white fw-bold py-3">
+          <i class="bi bi-box me-2"></i> Equipamento
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="text-muted small d-block">Nome</label>
+              <span class="fw-medium">{{ emp.patrimonio.nome_identificador }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-muted small d-block">Tipo</label>
+              <span class="badge bg-info text-white text-capitalize">{{ emp.patrimonio.tipo }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-muted small d-block">Etiqueta</label>
+              <span class="fw-medium">{{ emp.patrimonio.codigo_etiqueta or '—' }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-muted small d-block">Setor</label>
+              <span class="fw-medium">{{ emp.patrimonio.setor.nome if emp.patrimonio.setor else '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white fw-bold py-3">
+          <i class="bi bi-people me-2"></i> Envolvidos
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="text-muted small d-block">Tomador (quem está usando)</label>
+              <span class="fw-medium">{{ emp.usuario.nome_completo }}</span>
+              <span class="text-muted small d-block">{{ emp.usuario.email }}</span>
+            </div>
+            <div class="col-sm-6">
+              <label class="text-muted small d-block">Responsável pelo empréstimo</label>
+              <span class="fw-medium">{{ emp.responsavel.nome_completo }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body text-center py-4">
+          {% if emp.data_devolucao %}
+          <span class="badge bg-secondary py-2 px-4 fs-6 rounded-pill">
+            <i class="bi bi-check-circle me-1"></i> DEVOLVIDO
+          </span>
+          {% else %}
+          <span class="badge bg-success py-2 px-4 fs-6 rounded-pill">
+            <i class="bi bi-clock me-1"></i> EM ANDAMENTO
+          </span>
+          {% endif %}
+          <hr>
+          <div class="text-start mb-3">
+            <label class="text-muted small">Data do Empréstimo</label>
+            <div class="fw-bold">{{ (emp.data_emprestimo|naive).strftime('%d/%m/%Y %H:%M') }}</div>
+          </div>
+          {% if emp.data_devolucao_prevista %}
+          <div class="text-start mb-3">
+            <label class="text-muted small">Previsão de Devolução</label>
+            <div class="fw-bold">{{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') }}</div>
+          </div>
+          {% endif %}
+          {% if emp.data_devolucao %}
+          <div class="text-start">
+            <label class="text-muted small">Devolvido em</label>
+            <div class="fw-bold">{{ (emp.data_devolucao|naive).strftime('%d/%m/%Y %H:%M') }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if emp.observacoes %}
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white fw-bold py-3">
+          <i class="bi bi-chat-dots me-2"></i> Observações do Empréstimo
+        </div>
+        <div class="card-body">
+          <p class="mb-0">{{ emp.observacoes }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if emp.observacoes_devolucao %}
+      <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-white fw-bold py-3">
+          <i class="bi bi-exclamation-triangle me-2"></i> Observações da Devolução
+        </div>
+        <div class="card-body">
+          <p class="mb-0">{{ emp.observacoes_devolucao }}</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="devolverModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="/emprestimo/{{ emp.id }}/devolver">
+        <div class="modal-header">
+          <h5 class="modal-title">Registrar Devolução</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">Equipamento: <strong>{{ emp.patrimonio.nome_identificador }}</strong></p>
+          <label class="form-label fw-bold small text-muted text-uppercase">Ocorrências na devolução</label>
+          <textarea class="form-control" name="observacoes_devolucao" rows="3" placeholder="Danos, peças faltando, avarias..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg me-1"></i> Confirmar Devolução
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}

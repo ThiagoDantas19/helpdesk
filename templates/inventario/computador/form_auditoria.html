@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Auditoria: {{ computador.tag }} - HelpDesk{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
+                    <li class="breadcrumb-item"><a href="/inventario/computador/" class="text-decoration-none">Computadores</a></li>
+                    <li class="breadcrumb-item"><a href="/inventario/computador/{{ computador.patrimonio.id }}" class="text-decoration-none">{{ computador.patrimonio.codigo_etiqueta or 'Detalhes' }}</a></li>
+                    <li class="breadcrumb-item active">Auditoria</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0 fw-bold">Auditoria de Computador</h1>
+        </div>
+        <a href="/inventario/computador/{{ computador.patrimonio.id }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg me-1"></i> Cancelar
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+
+            <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+                <div class="card-body px-4 py-3">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                                    <i class="bi bi-laptop fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted text-uppercase fw-bold d-block lh-1">Equipamento</small>
+                                    <strong class="fs-5">{{ computador.tag }}</strong>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle ms-2">#{{ computador.patrimonio.codigo_etiqueta or 'S/P' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-auto">
+                            <div class="text-md-end">
+                                <small class="text-muted text-uppercase fw-bold d-block lh-1">Responsável</small>
+                                <strong>{{ computador.patrimonio.responsavel.nome_completo if computador.patrimonio.responsavel else 'Sem responsável' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form action="/inventario/computador/{{ computador.patrimonio.id }}/auditar" method="POST" enctype="multipart/form-data" id="auditForm">
+
+                <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <i class="bi bi-bar-chart-line fs-5 text-primary"></i>
+                        <strong class="small text-uppercase">Progresso</strong>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" id="progressBar" role="progressbar" style="width: 100%" aria-valuenow="13" aria-valuemin="0" aria-valuemax="13"></div>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="badge bg-success fs-6" id="progressCount">13/13</span>
+                    </div>
+                </div>
+
+                {% set grupos = [
+                    ('Integridade Física', 'bi-cpu', 'Hardware', [
+                        ('hardware_integro', 'Estado de Conservação', 'Carcaça, dobradiças, tela, teclado e portas USB em bom estado.'),
+                        ('bateria_ok', 'Saúde da Bateria', 'Bateria segurando carga sem aviso de vício ou estufamento (se aplicável).'),
+                        ('perifericos_ok', 'Periféricos e Cabos', 'Carregador, mouse e teclado (se fornecidos) em bom estado.'),
+                        ('limpeza_fisica_ok', 'Limpeza Física', 'Sem poeira excessiva nas saídas de ar que possa causar superaquecimento.'),
+                    ]),
+                    ('Segurança e Conformidade', 'bi-shield-check', 'Software', [
+                        ('antivirus_ok', 'Proteção Ativa', 'Antivírus corporativo/EDR instalado, rodando e atualizado.'),
+                        ('criptografia_ok', 'Criptografia de Disco', 'BitLocker (ou equivalente) ativo para proteção contra roubo de dados.'),
+                        ('updates_ok', 'Atualizações do Sistema', 'Windows/Linux com patches de segurança em dia.'),
+                        ('softwares_ok', 'Aplicações Homologadas', 'Livre de softwares piratas, jogos ou programas não autorizados.'),
+                    ]),
+                    ('Rede e Desempenho', 'bi-globe2', 'Rede', [
+                        ('dominio_ok', 'Vínculo de Domínio', 'Computador ingressado no AD/Entra ID com relação de confiança intacta.'),
+                        ('vpn_ok', 'Conectividade (VPN)', 'VPN corporativa e mapeamentos de rede configurados e funcionando.'),
+                        ('limpeza_disco_ok', 'Limpeza de Disco', 'HD/SSD com espaço livre adequado (>15%) e temporários limpos.'),
+                    ]),
+                    ('Alocação e Patrimônio', 'bi-tags', 'Alocação', [
+                        ('alocacao_ok', 'Localização Correta', 'Equipamento no setor e com o usuário responsável corretos.'),
+                        ('etiqueta_legivel', 'Etiquetas e Tags', 'Etiqueta de patrimônio e Service Tag legíveis e fixadas.'),
+                    ]),
+                ] %}
+
+                {% for grupo_title, grupo_icon, grupo_badge, itens in grupos %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                            <i class="{{ grupo_icon }} text-primary"></i>
+                            {{ grupo_title }}
+                        </h6>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary border" id="badge-{{ loop.index }}">{{ itens|length }} itens</span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-3">
+                            {% for name, label, desc in itens %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start gap-3 p-3 rounded-3 border bg-white audit-item" style="transition: all 0.15s ease;">
+                                    <div class="flex-shrink-0 pt-1">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input audit-check" type="checkbox" name="{{ name }}" id="{{ name }}" checked
+                                                   style="width: 2.5em; height: 1.25em; cursor: pointer;">
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <label class="fw-bold mb-0 d-flex align-items-center gap-2" for="{{ name }}" style="cursor: pointer; font-size: 0.95rem;">
+                                            {{ label }}
+                                            <i class="bi bi-check-circle-fill text-success status-icon" style="font-size: 0.8rem;"></i>
+                                        </label>
+                                        <small class="text-muted d-block mt-1">{{ desc }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-chat-left-text text-primary"></i>
+                            <h6 class="mb-0 fw-bold">Observações da Auditoria</h6>
+                        </div>
+                        <textarea class="form-control" name="observacoes" rows="3"
+                                  placeholder="Descreva irregularidades encontradas, itens de atenção ou observações relevantes..."></textarea>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-camera text-primary"></i>
+                        <h6 class="mb-0 fw-bold">Fotos da Auditoria</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="upload-zone border-2 border-dashed rounded-3 p-4 text-center" style="border-color: #cbd5e1; cursor:pointer; background:#fafafa;" onclick="document.getElementById('audit-fotos-pc').click()">
+                            <i class="bi bi-cloud-upload fs-2 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-1"><strong>Clique para selecionar</strong> ou arraste fotos aqui</p>
+                            <small class="text-muted">JPEG, PNG, MP4 — máx 50MB por arquivo</small>
+                            <input id="audit-fotos-pc" type="file" name="fotos" multiple accept="image/*,.mp4,.webm,.avi,.mkv,.mov" style="display:none" onchange="mostrarNomesFotos(this, 'foto-list-pc')">
+                        </div>
+                        <div id="foto-list-pc" class="mt-2 small text-muted"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-5 p-3 bg-white rounded-3 shadow-sm border">
+                    <div>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Todos os itens começam como <strong class="text-success">aprovados</strong>. Desmarque os que não estiverem conformes.
+                        </small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/inventario/computador/{{ computador.patrimonio.id }}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm">
+                            <i class="bi bi-check2-circle me-1"></i> Finalizar Auditoria
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .audit-item:hover {
+        border-color: #3b82f6;
+        background-color: #f8fafc;
+    }
+    [data-bs-theme="dark"] .audit-item:hover {
+        background-color: var(--bs-tertiary-bg);
+    }
+    .audit-check:not(:checked) ~ .status-icon {
+        color: #dc2626;
+    }
+    .audit-check:not(:checked) ~ .status-icon::before {
+        content: "\F623";
+    }
+    .progress { background-color: #e2e8f0; }
+    [data-bs-theme="dark"] .progress {
+        background-color: var(--bs-tertiary-bg);
+    }
+    .progress-bar { transition: width 0.3s ease; }
+</style>
+
+<script>
+(function() {
+    const checks = document.querySelectorAll('.audit-check');
+    const progressBar = document.getElementById('progressBar');
+    const progressCount = document.getElementById('progressCount');
+    const total = checks.length;
+
+    function updateProgress() {
+        const checked = document.querySelectorAll('.audit-check:checked').length;
+        const pct = Math.round((checked / total) * 100);
+        progressBar.style.width = pct + '%';
+        progressCount.textContent = checked + '/' + total;
+        progressCount.className = 'badge fs-6 ' + (checked === total ? 'bg-success' : checked > total/2 ? 'bg-warning text-dark' : 'bg-danger');
+        progressBar.className = 'progress-bar ' + (checked === total ? 'bg-success' : checked > total/2 ? 'bg-warning' : 'bg-danger');
+    }
+
+    checks.forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            const icon = this.closest('.audit-item').querySelector('.status-icon');
+            if (this.checked) {
+                icon.className = 'bi bi-check-circle-fill text-success status-icon';
+            } else {
+                icon.className = 'bi bi-x-circle-fill text-danger status-icon';
+            }
+            updateProgress();
+        });
+    });
+
+    updateProgress();
+})();
+function mostrarNomesFotos(input, containerId) {
+    const c = document.getElementById(containerId);
+    c.textContent = '';
+    for (const f of input.files) {
+        const d = document.createElement('div');
+        d.textContent = f.name + ' (' + (f.size/1024).toFixed(0) + ' KB)';
+        c.appendChild(d);
+    }
+}
+</script>
+{% endblock %}

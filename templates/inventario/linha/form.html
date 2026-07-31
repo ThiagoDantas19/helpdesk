@@ -1,0 +1,109 @@
+{% extends "base.html" %} {% block title %}Nova Linha - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 fw-bold">Cadastrar Linha</h1>
+      <p class="text-muted mb-0">Adicione um novo chip ou plano móvel.</p>
+    </div>
+    <a href="/inventario/linha/" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+          <form method="post" action="/inventario/linha/">
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-sim me-2"></i>Dados da Linha
+                </h6>
+              </div>
+              <div class="col-md-6">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Número</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="numero"
+                  required
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+              <div class="col-md-6">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Operadora</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="operadora"
+                  required
+                  placeholder="Ex: Vivo, Claro, TIM..."
+                />
+              </div>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-phone me-2"></i>Vinculação
+                </h6>
+              </div>
+              <div class="col-12">
+                <label
+                  class="form-label small fw-bold text-muted text-uppercase"
+                  >Vincular a Aparelho (Celular)</label
+                >
+                <select class="form-select" name="celular_id">
+                  <option value="">Sem vínculo...</option>
+                  {% for c in celulares %}
+                  <option value="{{ c.patrimonio.id }}">
+                    {{ c.patrimonio.nome_identificador }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                  <i class="bi bi-card-text me-2"></i>Observações
+                </h6>
+              </div>
+              <div class="col-12">
+                <textarea
+                  class="form-control"
+                  name="observacoes"
+                  rows="3"
+                  placeholder="Informações adicionais sobre o plano, franquia, bloqueios, etc."
+                ></textarea>
+              </div>
+            </div>
+            <div
+              class="d-flex justify-content-end align-items-center pt-3 border-top"
+            >
+              <a
+                href="/inventario/linha/"
+                class="btn btn-link text-secondary me-3 text-decoration-none"
+                >Cancelar</a
+              >
+              <button
+                type="submit"
+                class="btn btn-primary px-5 fw-bold shadow-sm"
+              >
+                <i class="bi bi-check-lg me-2"></i>Cadastrar Linha
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

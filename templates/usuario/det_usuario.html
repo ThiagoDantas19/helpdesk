@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ usuario.nome_completo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="/user/" class="btn btn-link p-0 text-decoration-none text-muted small">← Voltar para lista</a>
+            <h1 class="h3 mb-0">{{ usuario.nome_completo }}</h1>
+            {% if usuario.username %}
+            <span class="text-muted small">@{{ usuario.username }}</span>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/user/{{ usuario.id }}/edit" class="btn btn-outline-secondary">
+                <i class="bi bi-pencil me-1"></i> Editar
+            </a>
+            <button onclick="deletarUsuario({{ usuario.id }})" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Excluir
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white fw-bold py-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-badge"></i> Dados do Funcionário
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">E-mail Pessoal</label>
+                            <span class="fw-medium">{{ usuario.email }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Telefone</label>
+                            <span class="fw-medium">{{ usuario.telefone or '—' }}</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="text-muted small d-block">Setor</label>
+                            <span class="badge bg-primary text-white fs-6">{{ usuario.setor.nome if usuario.setor else '—' }}</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="text-muted small d-block">Cargo</label>
+                            <span class="fw-medium">{{ usuario.cargo.nome if usuario.cargo else '—' }}</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="text-muted small d-block">Tipo de Vínculo</label>
+                            <span class="fw-medium text-capitalize">{{ usuario.tipo_vinculo or 'Efetivo' }}</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="text-muted small d-block">Tipo de Acesso</label>
+                            <span class="fw-medium text-capitalize">{{ usuario.tipo_acesso }}</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="text-muted small d-block">Data de Admissão</label>
+                            <span class="fw-medium">{{ usuario.data_admissao.strftime('%d/%m/%Y') if usuario.data_admissao else '—' }}</span>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="text-muted small d-block">Data de Desligamento</label>
+                            <span class="fw-medium">{{ usuario.data_desligamento.strftime('%d/%m/%Y') if usuario.data_desligamento else '—' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold py-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-chat-dots"></i> Observações
+                </div>
+                <div class="card-body">
+                    {% if usuario.observacoes %}
+                    <div class="p-3 bg-light border rounded">{{ usuario.observacoes }}</div>
+                    {% else %}
+                    <span class="text-muted">Nenhuma observação registrada.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3">
+                        {% if usuario.ativo %}
+                        <span class="badge bg-success py-2 px-4 fs-6 rounded-pill">
+                            <i class="bi bi-check-circle me-1"></i> CONTA ATIVA
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger py-2 px-4 fs-6 rounded-pill">
+                            <i class="bi bi-x-circle me-1"></i> CONTA INATIVA
+                        </span>
+                        {% endif %}
+                    </div>
+                    <hr>
+                    <div class="text-start mb-3">
+                        <label class="text-muted small">Username:</label>
+                        <div class="fw-bold">{{ usuario.username or '—' }}</div>
+                    </div>
+                    <div class="text-start">
+                        <label class="text-muted small">E-mail Corporativo:</label>
+                        <div class="fw-bold text-primary">{{ usuario.email_corporativo or 'Pendente' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold py-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-diagram-3"></i> Onboarding & Acessos
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% set acessos = [
+                        ('AD', usuario.acesso_ad, 'Windows / Domínio'),
+                        ('Sistema', usuario.acesso_sistema, 'Sistema Corporativo'),
+                        ('Sharepoint', usuario.acesso_sharepoint, 'Sharepoint / Docs'),
+                        ('Biometria Digital', usuario.biometria_dedo, ''),
+                        ('Biometria Facial', usuario.biometria_facial, ''),
+                        ('Intelbras', usuario.perfil_intelbras is not none and usuario.perfil_intelbras != '', usuario.perfil_intelbras or '')
+                    ] %}
+                    {% for nome, status, tooltip in acessos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <div>
+                            <span>{{ nome }}</span>
+                            {% if tooltip %}
+                            <small class="text-muted d-block">{{ tooltip }}</small>
+                            {% endif %}
+                        </div>
+                        {% if status %}
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        {% else %}
+                        <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deletarUsuario(id) {
+    if(confirm('Tem certeza que deseja excluir este usuário definitivamente?')) {
+        fetch(`/user/${id}/delete`, { method: 'DELETE' })
+        .then(() => window.location.href = '/user/');
+    }
+}
+</script>
+{% endblock %}

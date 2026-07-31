@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Configurações - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 fw-bold">Configurações</h1>
+      <p class="text-muted mb-0">Gerencie setores, cargos e permissões do sistema.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+      <a href="/settings/setor/" class="text-decoration-none">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-5">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+              <i class="bi bi-building text-primary fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">Setores</h5>
+            <p class="small text-muted mb-0">Cadastre e gerencie os departamentos da organização.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <a href="/settings/cargo/" class="text-decoration-none">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-5">
+            <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+              <i class="bi bi-person-badge text-success fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">Cargos</h5>
+            <p class="small text-muted mb-0">Defina os cargos vinculados a cada setor.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <a href="/user/" class="text-decoration-none">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-5">
+            <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+              <i class="bi bi-people text-info fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">Usuários</h5>
+            <p class="small text-muted mb-0">Gerencie usuários e níveis de acesso ao sistema.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <a href="/logs/" class="text-decoration-none">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-5">
+            <div class="rounded-circle bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+              <i class="bi bi-journal-text text-secondary fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">Logs</h5>
+            <p class="small text-muted mb-0">Histórico de ações e auditoria do sistema.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <a href="/settings/credencial/" class="text-decoration-none">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center py-5">
+            <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+              <i class="bi bi-key text-warning fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">Credenciais</h5>
+            <p class="small text-muted mb-0">Cofre de senhas criptografadas do sistema.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

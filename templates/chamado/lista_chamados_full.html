@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Chamados - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+      <h1 class="h3 mb-1 fw-bold">Chamados</h1>
+      <p class="text-muted mb-0">Gerencie as solicitações de suporte em tempo real.</p>
+    </div>
+  </div>
+  <div id="chamados-container">
+    {% include "chamado/lista_chamados.html" %}
+  </div>
+</div>
+{% endblock %}

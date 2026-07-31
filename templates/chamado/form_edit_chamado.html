@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Chamado #{{ chamado.id }} - HelpDesk{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1 fw-bold text-primary">Editar Chamado #{{ chamado.id }}</h1>
+      <p class="text-muted mb-0">Atualize as informações, status e equipamentos do chamado.</p>
+    </div>
+    <a href="/task/{{ chamado.id }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" action="/task/{{ chamado.id }}/update" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0"><i class="bi bi-person me-2"></i>Solicitante</h6>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase">Funcionário</label>
+                <select class="form-select select2-search" name="funcionario_id" required>
+                  {% for u in funcionarios %}
+                    <option value="{{ u.id }}" {% if chamado.funcionario.id == u.id %}selected{% endif %}>
+                      {{ u.nome_completo }} — {{ u.setor.nome if u.setor else 'Geral' }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0"><i class="bi bi-chat-left-text me-2"></i>Descrição do Problema</h6>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase">Título Resumido</label>
+                <input class="form-control" name="titulo" value="{{ chamado.titulo }}" required />
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase">Descrição Detalhada</label>
+                <textarea class="form-control" name="descricao" rows="4" required>{{ chamado.descricao }}</textarea>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0"><i class="bi bi-pc-display me-2"></i>Dispositivos Vinculados (Opcional)</h6>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Tipo</label>
+                <select class="form-select" id="device-type-select">
+                  <option value="">Selecione o tipo...</option>
+                  <option value="computador">Computador</option>
+                  <option value="celular">Celular</option>
+                  <option value="telefone_ip">Telefone IP</option>
+                  <option value="impressora">Impressora</option>
+                  <option value="item_diverso">Item Diverso</option>
+                </select>
+              </div>
+
+              <div class="col-md-6" id="device-select-container">
+                <label class="form-label small fw-bold text-muted text-uppercase">Dispositivo</label>
+                <select class="form-select" id="device-item-select" disabled>
+                  <option value="">Selecione um tipo primeiro...</option>
+                </select>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" id="add-device-btn" disabled>
+                  <i class="bi bi-plus-lg"></i> Adicionar
+                </button>
+              </div>
+
+              <div class="col-12">
+                <ul class="list-group" id="selected-devices-list"></ul>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0"><i class="bi bi-gear me-2"></i>Gestão de Atendimento</h6>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Categoria</label>
+                <select class="form-select" name="categoria" required>
+                  {% for cat in ['Hardware','Software','Sistema','Acessos e Permissões','Rede','Impressão','Email','Solicitação de Imagens','Cameras','Vertis','Outros'] %}
+                    <option {% if chamado.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Prioridade</label>
+                <select class="form-select" name="prioridade" required>
+                  {% for p in ['Baixa','Média','Alta','Urgente'] %}
+                    <option {% if chamado.prioridade == p %}selected{% endif %}>{{ p }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
+                <select class="form-select" name="status" required>
+                  <option value="aberto" {% if chamado.status == 'aberto' %}selected{% endif %}>Aberto</option>
+                  <option value="em_atendimento" {% if chamado.status == 'em_atendimento' %}selected{% endif %}>Em Atendimento</option>
+                  <option value="fechado" {% if chamado.status == 'fechado' %}selected{% endif %}>Fechado</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase">Solução / Resposta</label>
+                <textarea class="form-control" name="resposta" rows="3" placeholder="Descreva a solução aplicada...">{{ chamado.resposta or '' }}</textarea>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-12 border-bottom pb-2 mb-2">
+                <h6 class="fw-bold text-primary mb-0"><i class="bi bi-paperclip me-2"></i>Anexos</h6>
+              </div>
+              {% if anexos %}
+              <div class="col-12">
+                <div class="d-flex flex-wrap gap-2">
+                  {% for a in anexos %}
+                  <div class="border rounded p-1 d-flex align-items-center gap-1" style="background:#fafafa">
+                    {% if a.mimetype.startswith('image/') %}
+                    <img src="/task/uploads/{{ a.stored_filename }}" style="width:32px;height:32px;object-fit:cover;border-radius:4px">
+                    {% else %}
+                    <i class="bi bi-file-earmark-text text-muted ms-1"></i>
+                    {% endif %}
+                    <small class="text-truncate" style="max-width:120px">{{ a.filename }}</small>
+                    <button class="btn btn-sm btn-outline-danger border-0 py-0 px-1"
+                            c-delete="/task/{{ chamado.id }}/anexo/{{ a.id }}/delete"
+                            c-redirect="/task/{{ chamado.id }}/edit">&times;</button>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+              <div class="col-12">
+                <input class="form-control" type="file" name="anexos" multiple accept="image/*,.mp4,.webm,.avi,.mkv,.mov,.wmv,.flv">
+                <small class="text-muted">Adicione mais arquivos se necessário.</small>
+              </div>
+            </div>
+
+            <div class="pt-3 border-top">
+              <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm fw-bold">
+                <i class="bi bi-save me-2"></i>Salvar Alterações
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEVICE_DATA = {
+  computador: [{% for c in computadores %}{value: 'computador_{{ c.patrimonio_id }}', label: '[{{ c.patrimonio.codigo_etiqueta }}] {{ c.tag or 'Sem Tag' }}'},{% endfor %}],
+  celular: [{% for cel in celulares %}{value: 'celular_{{ cel.patrimonio_id }}', label: '[{{ cel.patrimonio.codigo_etiqueta }}] {{ cel.modelo }}'},{% endfor %}],
+  telefone_ip: [{% for t in telefones_ip %}{value: 'telefone_ip_{{ t.patrimonio_id }}', label: '[{{ t.patrimonio.codigo_etiqueta }}] Ramal: {{ t.ramal }}'},{% endfor %}],
+  impressora: [{% for imp in impressoras %}{value: 'impressora_{{ imp.patrimonio_id }}', label: '[{{ imp.patrimonio.codigo_etiqueta }}] {{ imp.marca }} - {{ imp.modelo }}'},{% endfor %}],
+  item_diverso: [{% for item in itens_diversos %}{value: 'item_diverso_{{ item.patrimonio_id }}', label: '[{{ item.patrimonio.codigo_etiqueta }}] {{ item.nome }}'},{% endfor %}]
+};
+
+const INITIAL_DEVICES = {{ equipamentos_vinculados | tojson | safe }};
+
+document.addEventListener('DOMContentLoaded', function() {
+  const typeSelect = document.getElementById('device-type-select');
+  const deviceSelect = document.getElementById('device-item-select');
+  const addBtn = document.getElementById('add-device-btn');
+  const devicesList = document.getElementById('selected-devices-list');
+  const form = document.querySelector('form');
+
+  const addedDevices = new Set(INITIAL_DEVICES);
+
+  function updateHiddenInputs() {
+    const existing = form.querySelectorAll('input[name="equipamentos_ids"]');
+    existing.forEach(el => el.remove());
+    for (const val of addedDevices) {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'equipamentos_ids';
+      inp.value = val;
+      form.appendChild(inp);
+    }
+  }
+
+  function renderList() {
+    devicesList.innerHTML = '';
+    for (const val of addedDevices) {
+      const tipo = val.substring(0, val.lastIndexOf('_'));
+      let label = val;
+      const data = DEVICE_DATA[tipo] || [];
+      const match = data.find(d => d.value === val);
+      if (match) label = match.label;
+
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center py-2';
+      li.innerHTML = '<span><span class="badge bg-secondary me-2 text-uppercase">' + tipo + '</span> ' + label + '</span>' +
+        '<button type="button" class="btn btn-sm btn-outline-danger remove-device" data-value="' + val + '">' +
+        '<i class="bi bi-trash"></i></button>';
+      li.querySelector('.remove-device').addEventListener('click', function() {
+        addedDevices.delete(val);
+        updateHiddenInputs();
+        renderList();
+      });
+      devicesList.appendChild(li);
+    }
+  }
+
+  typeSelect.addEventListener('change', function() {
+    const tipo = this.value;
+    deviceSelect.innerHTML = '';
+    deviceSelect.disabled = true;
+    addBtn.disabled = true;
+    if (!tipo) {
+      deviceSelect.innerHTML = '<option value="">Selecione um tipo primeiro...</option>';
+      return;
+    }
+    const devices = DEVICE_DATA[tipo] || [];
+    if (devices.length === 0) {
+      deviceSelect.innerHTML = '<option value="">Nenhum dispositivo dispon\u00edvel</option>';
+      return;
+    }
+    deviceSelect.disabled = false;
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'Selecione o dispositivo...';
+    deviceSelect.appendChild(opt);
+    devices.forEach(function(d) {
+      const o = document.createElement('option');
+      o.value = d.value;
+      o.textContent = d.label;
+      deviceSelect.appendChild(o);
+    });
+  });
+
+  deviceSelect.addEventListener('change', function() {
+    addBtn.disabled = !this.value;
+  });
+
+  addBtn.addEventListener('click', function() {
+    const val = deviceSelect.value;
+    if (!val) return;
+    if (addedDevices.has(val)) return;
+    addedDevices.add(val);
+    updateHiddenInputs();
+    renderList();
+    deviceSelect.value = '';
+    addBtn.disabled = true;
+    deviceSelect.focus();
+  });
+
+  renderList();
+  updateHiddenInputs();
+});
+</script>
+{% endblock %}

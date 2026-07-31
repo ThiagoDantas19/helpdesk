@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Logs do Sistema - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item active">Logs</li>
+    </ol>
+  </nav>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 fw-bold">Logs do Sistema</h1>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-md-5">
+      <input type="text" id="log-search" class="form-control form-control-sm" placeholder="Buscar por descrição, entidade ou ação..." value="{{ q }}">
+    </div>
+    <div class="col-md-3">
+      <select id="log-entidade" class="form-select form-select-sm">
+        <option value="">Todas as entidades</option>
+        {% for e in entidades_disponiveis %}
+        <option value="{{ e.entidade }}" {{ 'selected' if entidade_filtro == e.entidade }}>{{ e.entidade }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button id="log-filtrar" class="btn btn-sm btn-outline-secondary w-100">Filtrar</button>
+    </div>
+    {% if q or entidade_filtro %}
+    <div class="col-md-2">
+      <a href="/logs/" class="btn btn-sm btn-outline-danger w-100">Limpar</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div id="logs-container">
+    {% include "logs/_tabela.html" %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function() {
+  var container = document.getElementById('logs-container');
+  var searchEl = document.getElementById('log-search');
+  var entidadeEl = document.getElementById('log-entidade');
+  var filtrarBtn = document.getElementById('log-filtrar');
+  var debounceTimer;
+
+  function carregarLogs(page) {
+    var params = new URLSearchParams();
+    if (page) params.set('page', page);
+    if (searchEl.value) params.set('q', searchEl.value);
+    if (entidadeEl.value) params.set('entidade', entidadeEl.value);
+    fetch('/logs/?' + params.toString(), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function(r) { return r.text(); }).then(function(html) {
+      container.innerHTML = html;
+    });
+  }
+
+  function onChange() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() { carregarLogs(1); }, 300);
+  }
+
+  searchEl.addEventListener('input', onChange);
+  entidadeEl.addEventListener('change', onChange);
+  filtrarBtn.addEventListener('click', function() { carregarLogs(1); });
+
+  container.addEventListener('click', function(e) {
+    var link = e.target.closest('.page-link');
+    if (link) {
+      e.preventDefault();
+      var url = new URL(link.href, window.location.origin);
+      carregarLogs(url.searchParams.get('page') || 1);
+    }
+  });
+})();
+</script>
+{% endblock %}

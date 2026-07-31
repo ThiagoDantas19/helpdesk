@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Auditoria: {{ item.nome }} - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
+                    <li class="breadcrumb-item"><a href="/inventario/item/" class="text-decoration-none">Itens Diversos</a></li>
+                    <li class="breadcrumb-item"><a href="/inventario/item/{{ item.patrimonio.id }}" class="text-decoration-none">{{ item.patrimonio.codigo_etiqueta or 'Detalhes' }}</a></li>
+                    <li class="breadcrumb-item active">Auditoria</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0 fw-bold">Auditoria de Item Diverso</h1>
+        </div>
+        <a href="/inventario/item/{{ item.patrimonio.id }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i> Cancelar</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);">
+                <div class="card-body px-4 py-3">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-3" style="width: 52px; height: 52px;">
+                                    <i class="bi bi-box-seam fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted text-uppercase fw-bold d-block lh-1">Item</small>
+                                    <strong class="fs-5">{{ item.nome }}</strong>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border ms-2">#{{ item.patrimonio.codigo_etiqueta or 'S/P' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-auto">
+                            <div class="text-md-end">
+                                <small class="text-muted text-uppercase fw-bold d-block lh-1">Responsável</small>
+                                <strong>{{ item.patrimonio.responsavel.nome_completo if item.patrimonio.responsavel else 'Sem responsável' }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form action="/inventario/item/{{ item.patrimonio.id }}/auditar" method="POST" enctype="multipart/form-data">
+                <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 shadow-sm border">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <i class="bi bi-bar-chart-line fs-5 text-primary"></i>
+                        <strong class="small text-uppercase">Progresso</strong>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" id="progressBar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="badge bg-success fs-6" id="progressCount">4/4</span>
+                    </div>
+                </div>
+
+                {% set itens = [
+                    ('estado_fisico_ok', 'Estado de Conservação', 'Sem avarias, rachaduras ou danos visíveis na estrutura.'),
+                    ('funcionamento_ok', 'Funcionamento', 'Item opera conforme esperado para sua finalidade.'),
+                    ('acessorios_ok', 'Acessórios Presentes', 'Todos os acessórios originais acompanham o item.'),
+                    ('etiqueta_legivel', 'Etiqueta de Patrimônio', 'Etiqueta de identificação legível e fixada.'),
+                ] %}
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-list-check text-primary me-2"></i>Checklist</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-3">
+                            {% for name, label, desc in itens %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start gap-3 p-3 rounded-3 border bg-white audit-item">
+                                    <div class="flex-shrink-0 pt-1">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input audit-check" type="checkbox" name="{{ name }}" id="{{ name }}" checked
+                                                   style="width: 2.5em; height: 1.25em; cursor: pointer;">
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <label class="fw-bold mb-0 d-flex align-items-center gap-2" for="{{ name }}" style="cursor: pointer; font-size: 0.95rem;">
+                                            {{ label }}
+                                            <i class="bi bi-check-circle-fill text-success status-icon" style="font-size: 0.8rem;"></i>
+                                        </label>
+                                        <small class="text-muted d-block mt-1">{{ desc }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-chat-left-text text-primary"></i>
+                            <h6 class="mb-0 fw-bold">Observações</h6>
+                        </div>
+                        <textarea class="form-control" name="observacoes" rows="3" placeholder="Descreva irregularidades ou observações relevantes..."></textarea>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-camera text-primary"></i>
+                        <h6 class="mb-0 fw-bold">Fotos da Auditoria</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="upload-zone border-2 border-dashed rounded-3 p-4 text-center" style="border-color: #cbd5e1; cursor:pointer; background:#fafafa;" onclick="document.getElementById('audit-fotos-item').click()">
+                            <i class="bi bi-cloud-upload fs-2 text-muted d-block mb-2"></i>
+                            <p class="text-muted mb-1"><strong>Clique para selecionar</strong> ou arraste fotos aqui</p>
+                            <small class="text-muted">JPEG, PNG, MP4 — máx 50MB por arquivo</small>
+                            <input id="audit-fotos-item" type="file" name="fotos" multiple accept="image/*,.mp4,.webm,.avi,.mkv,.mov" style="display:none" onchange="mostrarNomesFotos(this, 'foto-list-item')">
+                        </div>
+                        <div id="foto-list-item" class="mt-2 small text-muted"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-5 p-3 bg-white rounded-3 shadow-sm border">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Todos começam como <strong class="text-success">aprovados</strong>. Desmarque os não conformes.</small>
+                    <div class="d-flex gap-2">
+                        <a href="/inventario/item/{{ item.patrimonio.id }}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm"><i class="bi bi-check2-circle me-1"></i> Finalizar Auditoria</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+    .audit-item:hover { border-color: #3b82f6; background-color: #f8fafc; }
+    [data-bs-theme="dark"] .audit-item:hover { background-color: var(--bs-tertiary-bg); }
+    .audit-check:not(:checked) ~ .status-icon { color: #dc2626; }
+    .audit-check:not(:checked) ~ .status-icon::before { content: "\F623"; }
+    .progress { background-color: #e2e8f0; }
+    [data-bs-theme="dark"] .progress { background-color: var(--bs-tertiary-bg); }
+    .progress-bar { transition: width 0.3s ease; }
+</style>
+<script>
+(function() {
+    const checks = document.querySelectorAll('.audit-check');
+    const bar = document.getElementById('progressBar');
+    const cnt = document.getElementById('progressCount');
+    function upd() {
+        const c = document.querySelectorAll('.audit-check:checked').length;
+        const p = Math.round((c / checks.length) * 100);
+        bar.style.width = p + '%';
+        cnt.textContent = c + '/' + checks.length;
+        cnt.className = 'badge fs-6 ' + (c === checks.length ? 'bg-success' : c > checks.length/2 ? 'bg-warning text-dark' : 'bg-danger');
+        bar.className = 'progress-bar ' + (c === checks.length ? 'bg-success' : c > checks.length/2 ? 'bg-warning' : 'bg-danger');
+    }
+    checks.forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            const icon = this.closest('.audit-item').querySelector('.status-icon');
+            icon.className = 'bi ' + (this.checked ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger') + ' status-icon';
+            upd();
+        });
+    });
+    upd();
+})();
+function mostrarNomesFotos(input, containerId) {
+    const c = document.getElementById(containerId);
+    c.textContent = '';
+    for (const f of input.files) {
+        const d = document.createElement('div');
+        d.textContent = f.name + ' (' + (f.size/1024).toFixed(0) + ' KB)';
+        c.appendChild(d);
+    }
+}
+</script>
+{% endblock %}

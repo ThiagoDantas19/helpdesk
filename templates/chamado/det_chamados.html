@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+{% block title %}Chamado #{{ chamado.id }} - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+
+  {# ── HEADER ── #}
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1 small">
+          <li class="breadcrumb-item"><a href="/task/" class="text-decoration-none">Chamados</a></li>
+          <li class="breadcrumb-item active" aria-current="page">#{{ chamado.id }}</li>
+        </ol>
+      </nav>
+      <h1 class="h3 mb-0 fw-bold">Chamado #{{ chamado.id }}</h1>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="/task/" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+        <i class="bi bi-arrow-left me-1"></i> Voltar
+      </a>
+      {% if current_user.tipo_acesso == 'admin' %}
+      <a href="/task/{{ chamado.id }}/edit" class="btn btn-primary btn-sm d-flex align-items-center shadow-sm fw-bold">
+        <i class="bi bi-pencil-square me-1"></i> Editar
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── BANNER DE ENCERRAMENTO ── #}
+  {% if chamado.status == 'fechado' %}
+  <div class="rounded-3 border border-secondary bg-light px-4 py-3 mb-4 d-flex flex-wrap align-items-center gap-3">
+    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width: 40px; height: 40px;">
+      <i class="bi bi-check2-all"></i>
+    </div>
+    <div class="flex-fill">
+      <h6 class="fw-bold mb-0 text-secondary">Chamado Encerrado</h6>
+      <small class="text-muted">Este chamado foi finalizado em {{ chamado.fechado_em.strftime('%d/%m/%Y às %H:%M') }}</small>
+    </div>
+    <div class="text-end flex-shrink-0">
+      <div class="small text-muted fw-bold text-uppercase">Tempo de Resolução</div>
+      <div class="fw-bold text-dark">{{ ((chamado.fechado_em|naive - chamado.criado_em|naive).days) }} dia(s)</div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── STATUS BAR ── #}
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="d-flex" style="height: 6px;">
+      <div class="flex-fill {{ 'bg-success' if chamado.status in ('aberto', 'em_andamento', 'fechado') else 'bg-light' }}"></div>
+      <div class="flex-fill {{ 'bg-primary' if chamado.status in ('em_andamento', 'fechado') else 'bg-light' }}"></div>
+      <div class="flex-fill {{ 'bg-secondary' if chamado.status == 'fechado' else 'bg-light' }}"></div>
+    </div>
+    <div class="card-body px-4 py-3">
+      <div class="row g-2 align-items-center">
+        <div class="col">
+          <div class="d-flex gap-4">
+            <div class="d-flex align-items-center gap-1 small {{ 'text-success fw-bold' if chamado.status in ('aberto', 'em_andamento', 'fechado') else 'text-muted' }}">
+              <i class="bi bi-check-circle-fill"></i> Aberto
+            </div>
+            <div class="d-flex align-items-center gap-1 small {{ 'text-primary fw-bold' if chamado.status in ('em_andamento', 'fechado') else 'text-muted' }}">
+              <i class="bi bi-check-circle-fill"></i> Em Andamento
+            </div>
+            <div class="d-flex align-items-center gap-1 small {{ 'text-secondary fw-bold' if chamado.status == 'fechado' else 'text-muted' }}">
+              <i class="bi bi-check-circle-fill"></i> Fechado
+            </div>
+          </div>
+        </div>
+        <div class="col-auto">
+          {% if chamado.status == 'aberto' %}
+            <span class="badge bg-success px-3 rounded-pill">Aberto</span>
+          {% elif chamado.status == 'em_andamento' %}
+            <span class="badge bg-primary px-3 rounded-pill">Em Andamento</span>
+          {% elif chamado.status == 'fechado' %}
+            <span class="badge bg-secondary px-3 rounded-pill">Fechado</span>
+          {% else %}
+            <span class="badge bg-warning text-dark px-3 rounded-pill">{{ chamado.status }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    {# ── COLUNA PRINCIPAL ── #}
+    <div class="col-lg-8">
+
+      {# ── TIMELINE ── #}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+
+          {# 1. Abertura #}
+          <div class="d-flex mb-4">
+            <div class="d-flex flex-column align-items-center flex-shrink-0" style="width: 28px;">
+              <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 22px; height: 22px; font-size: 0.6rem; background-color: #198754;">
+                <i class="bi bi-plus-lg"></i>
+              </span>
+            </div>
+            <div class="flex-fill ps-3">
+              <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
+                <h6 class="fw-bold mb-0 text-success">Abertura do Chamado</h6>
+                <small class="text-muted">{{ chamado.criado_em.strftime('%d/%m/%Y às %H:%M') }}</small>
+              </div>
+              <p class="text-muted small mb-2">{{ chamado.funcionario.nome_completo }} · {{ chamado.funcionario.setor.nome if chamado.funcionario.setor else '' }}</p>
+              <div class="p-3 bg-light rounded border">
+                <div class="fw-bold text-dark mb-1">{{ chamado.titulo }}</div>
+                {{ chamado.descricao }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex" style="padding-left: 11px; min-height: 24px;">
+            <div style="width: 2px; background-color: #198754;"></div>
+          </div>
+
+          {# 2. Resposta #}
+          {% if chamado.resposta %}
+          <div class="d-flex mb-4 mt-1">
+            <div class="d-flex flex-column align-items-center flex-shrink-0" style="width: 28px;">
+              <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 22px; height: 22px; font-size: 0.6rem; background-color: #198754;">
+                <i class="bi bi-check-lg"></i>
+              </span>
+            </div>
+            <div class="flex-fill ps-3">
+              <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
+                <h6 class="fw-bold mb-0 text-success"><i class="bi bi-chat-dots me-1"></i>Resposta do Técnico</h6>
+                <small class="text-muted">{{ chamado.atualizado_em.strftime('%d/%m/%Y às %H:%M') if chamado.atualizado_em else '' }}</small>
+              </div>
+              <p class="text-muted small mb-2">{{ chamado.operador.nome_completo if chamado.operador else 'Técnico' }}</p>
+              <div class="p-3 rounded border border-success" style="background-color: #ecfdf5">
+                {{ chamado.resposta }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex" style="padding-left: 11px; min-height: 24px;">
+            <div style="width: 2px; background-color: #198754;"></div>
+          </div>
+          {% endif %}
+
+          {# 3. Nota Interna #}
+          {% if chamado.nota_interna and current_user.tipo_acesso in ('admin', 'tecnico') %}
+          <div class="d-flex mb-4 mt-1">
+            <div class="d-flex flex-column align-items-center flex-shrink-0" style="width: 28px;">
+              <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 22px; height: 22px; font-size: 0.6rem; background-color: #ffc107;">
+                <i class="bi bi-lock"></i>
+              </span>
+            </div>
+            <div class="flex-fill ps-3">
+              <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
+                <h6 class="fw-bold mb-0 text-warning"><i class="bi bi-lock me-1"></i>Nota Interna</h6>
+              </div>
+              <div class="p-3 rounded border border-warning fst-italic text-secondary" style="background-color: #fffbeb">
+                {{ chamado.nota_interna }}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex" style="padding-left: 11px; min-height: 24px;">
+            <div style="width: 2px; background-color: #ffc107;"></div>
+          </div>
+          {% endif %}
+
+          {# 4. Encerramento #}
+          {% if chamado.fechado_em %}
+          <div class="d-flex mt-1">
+            <div class="d-flex flex-column align-items-center flex-shrink-0" style="width: 28px;">
+              <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 22px; height: 22px; font-size: 0.6rem; background-color: #6c757d;">
+                <i class="bi bi-check2-all"></i>
+              </span>
+            </div>
+            <div class="flex-fill ps-3">
+              <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
+                <h6 class="fw-bold mb-0 text-secondary">Chamado Encerrado</h6>
+                <small class="text-muted">{{ chamado.fechado_em.strftime('%d/%m/%Y às %H:%M') }}</small>
+              </div>
+              <p class="text-muted small mb-0">Finalizado por {{ chamado.operador.nome_completo if chamado.operador else 'Sistema' }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      {# ── ANEXOS ── #}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-paperclip me-2"></i>Anexos ({{ chamado.anexos.count() }})</h6>
+          {% if current_user.tipo_acesso in ('admin', 'tecnico') and chamado.status != 'fechado' %}
+          <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('upload-anexo-input').click()">
+            <i class="bi bi-upload me-1"></i> Adicionar
+          </button>
+          <form action="/task/{{ chamado.id }}/anexar" method="POST" enctype="multipart/form-data" style="display:none">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input id="upload-anexo-input" type="file" name="anexos" multiple accept="image/*,.mp4,.webm,.avi,.mkv,.mov,.wmv,.flv" onchange="this.form.submit()">
+          </form>
+          {% endif %}
+        </div>
+        <div class="card-body px-4 py-3">
+
+          {% if anexos %}
+          <div class="row g-2">
+            {% for a in anexos %}
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="position-relative border rounded p-2 text-center" style="background:#fafafa">
+                {% if a.mimetype.startswith('image/') %}
+                <img src="/task/uploads/{{ a.stored_filename }}"
+                     class="img-fluid rounded mb-1"
+                     style="max-height:120px;object-fit:cover;cursor:pointer"
+                     loading="lazy"
+                     onclick="abrirLightbox('{{ a.stored_filename }}', '{{ a.filename }}')">
+                {% else %}
+                <div class="py-3">
+                  <i class="bi bi-file-earmark-text display-6 text-muted"></i>
+                </div>
+                {% endif %}
+                <small class="d-block text-truncate">{{ a.filename }}</small>
+                <small class="text-muted">{{ (a.filesize / 1024)|round(1) }} KB</small>
+                {% if current_user.tipo_acesso == 'admin' %}
+                <button class="btn btn-sm btn-outline-danger border-0 position-absolute top-0 end-0"
+                        c-delete="/task/{{ chamado.id }}/anexo/{{ a.id }}/delete"
+                        c-redirect="/task/{{ chamado.id }}">
+                  <i class="bi bi-x"></i>
+                </button>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Nenhum anexo neste chamado.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      {# ── EQUIPAMENTOS ── #}
+      {% if equipamentos %}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-link-45deg me-2"></i>Equipamentos Vinculados</h6>
+        </div>
+        <div class="list-group list-group-flush">
+          {% for eq in equipamentos %}
+          <div class="list-group-item d-flex align-items-center gap-3 px-4 py-3">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+              {% if eq.tipo == 'computador' %}
+                <i class="bi bi-pc-display text-primary"></i>
+              {% elif eq.tipo == 'celular' %}
+                <i class="bi bi-phone text-primary"></i>
+              {% elif eq.tipo == 'telefone_ip' %}
+                <i class="bi bi-telephone text-primary"></i>
+              {% elif eq.tipo == 'impressora' %}
+                <i class="bi bi-printer text-primary"></i>
+              {% else %}
+                <i class="bi bi-box-seam text-primary"></i>
+              {% endif %}
+            </div>
+            <div class="flex-fill min-w-0">
+              <div class="fw-medium text-dark text-truncate">{{ eq.nome }}</div>
+              <small class="text-muted">{{ eq.tipo|replace('_', ' ')|title }}</small>
+            </div>
+            {% if eq.url %}
+            <a href="{{ eq.url }}" class="btn btn-sm btn-outline-secondary border-0 flex-shrink-0" title="Abrir">
+              <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    {# ── COLUNA LATERAL ── #}
+    <div class="col-lg-4">
+
+      {# ── PRIORIDADE / INFO ── #}
+      <div class="card border-0 shadow-sm mb-4">
+        {% if chamado.prioridade == 'Urgente' %}
+          <div class="bg-danger px-4 py-2"><span class="text-white small fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>Prioridade Urgente</span></div>
+        {% elif chamado.prioridade == 'Alta' %}
+          <div class="bg-warning px-4 py-2"><span class="text-dark small fw-bold"><i class="bi bi-exclamation-circle-fill me-1"></i>Prioridade Alta</span></div>
+        {% else %}
+          <div class="bg-light px-4 py-2"><span class="text-muted small fw-bold"><i class="bi bi-info-circle me-1"></i>Prioridade {{ chamado.prioridade or 'Média' }}</span></div>
+        {% endif %}
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Solicitante</label>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-person-circle text-primary fs-4 me-2"></i>
+              <div>
+                <p class="mb-0 fw-bold text-dark">{{ chamado.funcionario.nome_completo }}</p>
+                <small class="text-muted">{{ chamado.funcionario.setor.nome if chamado.funcionario.setor else '' }}</small>
+              </div>
+            </div>
+          </div>
+
+          {% if chamado.operador %}
+          <div class="mb-3">
+            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Técnico</label>
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0 me-2" style="width: 32px; height: 32px;">
+                <i class="bi bi-person-gear text-info"></i>
+              </div>
+              <p class="mb-0 fw-medium">{{ chamado.operador.nome_completo }}</p>
+            </div>
+          </div>
+          {% endif %}
+
+          <div>
+            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Categoria</label>
+            <span class="badge bg-light text-dark border">{{ chamado.categoria or '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      {# ── DATAS ── #}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-clock-history me-2 text-primary"></i>Datas</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width: 32px; height: 32px;">
+              <i class="bi bi-plus-circle text-success" style="font-size: 0.9rem;"></i>
+            </div>
+            <div class="flex-fill">
+              <div class="small text-muted fw-bold text-uppercase">Abertura</div>
+              <div class="fw-medium text-dark small">{{ chamado.criado_em.strftime('%d/%m/%Y') }} às {{ chamado.criado_em.strftime('%H:%M') }}</div>
+            </div>
+          </div>
+          {% if chamado.atualizado_em %}
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width: 32px; height: 32px;">
+              <i class="bi bi-arrow-repeat text-primary" style="font-size: 0.9rem;"></i>
+            </div>
+            <div class="flex-fill">
+              <div class="small text-muted fw-bold text-uppercase">Atualização</div>
+              <div class="fw-medium text-dark small">{{ chamado.atualizado_em.strftime('%d/%m/%Y') }} às {{ chamado.atualizado_em.strftime('%H:%M') }}</div>
+            </div>
+          </div>
+          {% endif %}
+          {% if chamado.fechado_em %}
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center flex-shrink-0 me-3" style="width: 32px; height: 32px;">
+              <i class="bi bi-check2-all text-secondary" style="font-size: 0.9rem;"></i>
+            </div>
+            <div class="flex-fill">
+              <div class="small text-muted fw-bold text-uppercase">Encerramento</div>
+              <div class="fw-medium text-dark small">{{ chamado.fechado_em.strftime('%d/%m/%Y') }} às {{ chamado.fechado_em.strftime('%H:%M') }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# ── RESUMO DE ENCERRAMENTO ── #}
+      {% if chamado.status == 'fechado' %}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-check2-circle me-2 text-secondary"></i>Resumo do Atendimento</h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Atendido por</label>
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0 me-2" style="width: 32px; height: 32px;">
+                <i class="bi bi-person-gear text-secondary"></i>
+              </div>
+              <p class="mb-0 fw-medium">{{ chamado.operador.nome_completo if chamado.operador else 'Sistema' }}</p>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="text-center flex-fill p-2 bg-light rounded border">
+              <div class="fw-bold text-dark">{{ ((chamado.fechado_em|naive - chamado.criado_em|naive).days) }}d</div>
+              <small class="text-muted">Duração</small>
+            </div>
+            <div class="text-center flex-fill p-2 bg-light rounded border">
+              <div class="fw-bold text-dark">{{ chamado.fechado_em.strftime('%d/%m') }}</div>
+              <small class="text-muted">Encerrado</small>
+            </div>
+          </div>
+          {% if chamado.resposta %}
+          <div>
+            <label class="small text-muted fw-bold text-uppercase d-block mb-1">Solução Aplicada</label>
+            <div class="p-2 bg-light rounded small border">
+              {{ chamado.resposta }}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── AÇÕES DO TÉCNICO ── #}
+      {% if current_user.tipo_acesso in ('admin', 'tecnico') and chamado.status != 'fechado' %}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-bottom">
+          <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-tools me-2 text-primary"></i>Atendimento</h6>
+        </div>
+        <div class="card-body">
+          {% if not chamado.operador %}
+          <form action="/task/{{ chamado.id }}/assumir" method="POST" class="mb-3">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-info text-white w-100 shadow-sm fw-bold py-2">
+              <i class="bi bi-hand-index-thumb me-2"></i> Assumir Chamado
+            </button>
+          </form>
+          {% endif %}
+
+          <form action="/task/{{ chamado.id }}/responder" method="POST">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-2">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Solução</label>
+              <textarea name="resposta" class="form-control" rows="3" placeholder="Descreva a solução aplicada...">{{ chamado.resposta or '' }}</textarea>
+            </div>
+            <div class="mb-3">
+              <label class="small text-muted fw-bold text-uppercase d-block mb-1">Nota Interna</label>
+              <textarea name="nota_interna" class="form-control" rows="2" placeholder="Observações internas...">{{ chamado.nota_interna or '' }}</textarea>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" name="status" value="em_andamento" class="btn btn-primary w-100 fw-bold">
+                <i class="bi bi-send me-1"></i> Salvar
+              </button>
+              <button type="submit" name="status" value="fechado" class="btn btn-success w-100 fw-bold">
+                <i class="bi bi-check-lg me-1"></i> Fechar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── ADMIN ── #}
+      {% if current_user.tipo_acesso == 'admin' %}
+      <div class="d-grid gap-2">
+        <a href="/task/{{ chamado.id }}/edit" class="btn btn-primary shadow-sm py-2 fw-bold">
+          <i class="bi bi-pencil-square me-2"></i>Editar Chamado
+        </a>
+        <button class="btn btn-outline-danger border-0 py-2"
+                c-delete="/task/{{ chamado.id }}/delete"
+                c-redirect="/task/">
+          <i class="bi bi-trash me-2"></i>Excluir Chamado
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-black border-0">
+      <div class="modal-header border-0 p-2">
+        <span class="text-white small text-truncate" id="lightboxCaption"></span>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-0">
+        <img id="lightboxImg" class="img-fluid" style="max-height:85vh;" alt="">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirLightbox(stored, nome) {
+  document.getElementById('lightboxImg').src = '/task/uploads/' + stored;
+  document.getElementById('lightboxCaption').textContent = nome;
+  var modal = new bootstrap.Modal(document.getElementById('lightboxModal'));
+  modal.show();
+}
+document.getElementById('lightboxModal').addEventListener('hidden.bs.modal', function () {
+  document.getElementById('lightboxImg').src = '';
+});
+</script>
+{% endblock %}

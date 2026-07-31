@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if setor else 'Novo' }} Setor - HelpDesk{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2 small">
+          <li class="breadcrumb-item"><a href="/settings/" class="text-decoration-none">Configurações</a></li>
+          <li class="breadcrumb-item"><a href="/settings/setor/" class="text-decoration-none">Setores</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ 'Editar' if setor else 'Novo' }}</li>
+        </ol>
+      </nav>
+
+      <h1 class="h3 fw-bold mb-4">{{ 'Editar Setor' if setor else 'Novo Setor' }}</h1>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <form method="POST" action="{{ '/settings/setor/%d/update' % setor.id if setor else '/settings/setor/' }}">
+            <div class="mb-3">
+              <label for="nome" class="form-label fw-medium">Nome do Setor</label>
+              <input type="text" class="form-control" id="nome" name="nome" required
+                     value="{{ setor.nome if setor else '' }}"
+                     placeholder="Ex: Financeiro, TI, RH...">
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary fw-bold">{{ 'Salvar' if setor else 'Criar' }}</button>
+              <a href="/settings/setor/" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
