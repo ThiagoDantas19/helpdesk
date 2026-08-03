@@ -27,7 +27,8 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold small text-muted text-uppercase">Usuário (login)</label>
-                        <input class="form-control" name="username" required placeholder="exemplo.username" />
+                        <input class="form-control" name="username" id="username" required placeholder="exemplo.username" />
+                        <div id="username-feedback" class="form-text"></div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold small text-muted text-uppercase">Senha</label>
@@ -165,10 +166,51 @@
     }
 
     const inputNome = document.querySelector('[name="nome_completo"]');
-    const inputUsername = document.querySelector('[name="username"]');
+    const inputUsername = document.getElementById('username');
     const inputPassword = document.querySelector('[name="password"]');
+    const usernameFeedback = document.getElementById('username-feedback');
 
     let passwordAuto = false;
+    let usernameCheckTimer = null;
+
+    function verificarUsername() {
+        const username = inputUsername.value.trim();
+        const form = inputUsername.closest('.col-md-4');
+        clearTimeout(usernameCheckTimer);
+
+        if (!username) {
+            form.classList.remove('is-invalid');
+            inputUsername.classList.remove('is-invalid', 'is-valid');
+            usernameFeedback.textContent = '';
+            return;
+        }
+
+        usernameCheckTimer = setTimeout(() => {
+            fetch('/user/verificar-username?username=' + encodeURIComponent(username))
+                .then(r => r.json())
+                .then(data => {
+                    inputUsername.classList.remove('is-invalid', 'is-valid');
+                    usernameFeedback.textContent = '';
+                    if (data.disponivel) {
+                        inputUsername.classList.add('is-valid');
+                        usernameFeedback.textContent = 'Disponível';
+                        usernameFeedback.classList.add('text-success');
+                        usernameFeedback.classList.remove('text-danger');
+                    } else {
+                        inputUsername.classList.add('is-invalid');
+                        usernameFeedback.textContent = 'Este usuário já existe.';
+                        usernameFeedback.classList.add('text-danger');
+                        usernameFeedback.classList.remove('text-success');
+                    }
+                })
+                .catch(() => {
+                    inputUsername.classList.remove('is-invalid', 'is-valid');
+                    usernameFeedback.textContent = '';
+                });
+        }, 300);
+    }
+
+    inputUsername.addEventListener('input', verificarUsername);
 
     inputNome.addEventListener('input', function() {
         const login = gerarLogin(this.value);
@@ -178,6 +220,7 @@
                 inputPassword.value = login;
                 passwordAuto = true;
             }
+            verificarUsername();
         }
     });
 

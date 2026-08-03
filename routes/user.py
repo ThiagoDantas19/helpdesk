@@ -177,6 +177,21 @@ def buscar_cargos():
     return html_options
 
 
+@user_route.route('/verificar-username', methods=['GET'])
+@login_required
+@admin_required
+def verificar_username():
+    username = request.args.get('username', '').strip()
+    excluir = request.args.get('excluir', type=int)
+    if not username:
+        return jsonify({'disponivel': True})
+    query = User.select().where(User.username == username)
+    if excluir:
+        query = query.where(User.id != excluir)
+    existe = query.first() is not None
+    return jsonify({'disponivel': not existe})
+
+
 @user_route.route('/<int:user_id>/delete', methods=['DELETE'])
 @login_required
 @admin_required
