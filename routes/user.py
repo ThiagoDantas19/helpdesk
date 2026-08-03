@@ -3,11 +3,23 @@ from flask_login import login_required, current_user
 from routes.auth import admin_required
 from database.models.usuarios import User, Setor, Cargo
 from database.models.log import registrar_log
+from database.database import unaccent
+from peewee import fn
 from markupsafe import escape
 from math import ceil
+from datetime import datetime
 
 user_route = Blueprint('user', __name__)
 POR_PAGINA = 25
+
+
+def validar_data(data_str):
+    if not data_str:
+        return None
+    try:
+        return datetime.strptime(data_str, '%d/%m/%Y').date()
+    except ValueError:
+        return False
 
 
 @user_route.route('/', methods=['GET'])
@@ -17,16 +29,20 @@ def lista_usuarios():
     nome = request.args.get('nome', '')
     setor_id = request.args.get('setor', '')
     ativo = request.args.get('ativo', '')
+    vinculo = request.args.get('vinculo', '')
     page = request.args.get('page', 1, type=int)
 
     query = User.select().order_by(User.nome_completo)
 
     if nome:
-        query = query.where(User.nome_completo.contains(nome))
+        nome_norm = unaccent(nome.lower())
+        query = query.where(fn.unaccent(fn.lower(User.nome_completo)).contains(nome_norm))
     if ativo != '':
         query = query.where(User.ativo == (ativo == '1'))
     if setor_id:
         query = query.where(User.setor == setor_id)
+    if vinculo:
+        query = query.where(User.tipo_vinculo == vinculo)
 
     total = query.count()
     pages = ceil(total / POR_PAGINA)
@@ -36,6 +52,7 @@ def lista_usuarios():
     return render_template('usuario/lista_usuarios_page.html',
                            usuarios=usuarios, setores=setores,
                            nome=nome, setor_id=setor_id, ativo=ativo,
+                           vinculo=vinculo,
                            page=page, pages=pages, total=total)
 
 
@@ -72,6 +89,11 @@ def criar_usuario():
         flash('Este nome de usuário já existe.', 'danger')
         return redirect('/user/new')
 
+    data_admissao = validar_data(data.get('data_admissao'))
+    if data_admissao is False:
+        flash('Data de admissão inválida. Use o formato dd/mm/aaaa.', 'danger')
+        return redirect('/user/new')
+
     user = User.create(
         nome_completo=nome_completo,
         email=email,
@@ -81,7 +103,7 @@ def criar_usuario():
         cargo=data.get('cargo_id'),
         tipo_acesso=data.get('tipo_acesso', 'usuario'),
         tipo_vinculo=data.get('tipo_vinculo', 'efetivo'),
-        data_admissao=data.get('data_admissao') or None,
+        data_admissao=data_admissao,
         observacoes=data.get('observacoes') or None,
         email_corporativo=data.get('email_corporativo'),
         perfil_intelbras=data.get('perfil_intelbras'),
@@ -138,8 +160,13 @@ def update_usuario(user_id):
     usuario.email_corporativo = data.get('email_corporativo')
     usuario.perfil_intelbras = data.get('perfil_intelbras')
     usuario.observacoes = data.get('observacoes') or None
-    usuario.data_admissao = data.get('data_admissao') or None
-    usuario.data_desligamento = data.get('data_desligamento') or None
+    data_admissao = validar_data(data.get('data_admissao'))
+    data_desligamento = validar_data(data.get('data_desligamento'))
+    if data_admissao is False or data_desligamento is False:
+        flash('Data inválida. Use o formato dd/mm/aaaa.', 'danger')
+        return redirect(f'/user/{user_id}/edit')
+    usuario.data_admissao = data_admissao
+    usuario.data_desligamento = data_desligamento
     usuario.ativo = data.get('ativo') == '1'
 
     usuario.acesso_ad = data.get('acesso_ad') == '1'
@@ -190,17 +217,3 @@ def verificar_username():
         query = query.where(User.id != excluir)
     existe = query.first() is not None
     return jsonify({'disponivel': not existe})
-
-
-@user_route.route('/<int:user_id>/delete', methods=['DELETE'])
-@login_required
-@admin_required
-def deletar_usuario(user_id):
-    if user_id == current_user.id:
-        return jsonify({'deleted': 'error', 'message': 'Você não pode excluir a si mesmo.'}), 400
-    usuario = User.get_by_id(user_id)
-    username = usuario.username
-    usuario.delete_instance()
-    registrar_log(current_user, 'deletar', entidade='user', entidade_id=user_id,
-                  descricao=f'Usuário {username} deletado.')
-    return jsonify({'deleted': 'ok'})

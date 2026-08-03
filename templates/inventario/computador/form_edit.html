@@ -61,7 +61,7 @@
 
               <div class="col-md-3">
                 <label class="form-label small fw-bold text-muted text-uppercase">Data de Fabricação</label>
-                <input type="date" class="form-control" name="data_fabricacao" value="{{ computador.data_fabricacao or '' }}" />
+                <input type="text" class="form-control mascara-data" name="data_fabricacao" maxlength="10" placeholder="dd/mm/aaaa" value="{{ computador.data_fabricacao.strftime('%d/%m/%Y') if computador.data_fabricacao else '' }}" />
               </div>
             </div>
 

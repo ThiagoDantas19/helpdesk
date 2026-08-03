@@ -16,9 +16,6 @@
             <a href="/user/{{ usuario.id }}/edit" class="btn btn-outline-secondary">
                 <i class="bi bi-pencil me-1"></i> Editar
             </a>
-            <button onclick="deletarUsuario({{ usuario.id }})" class="btn btn-outline-danger">
-                <i class="bi bi-trash me-1"></i> Excluir
-            </button>
         </div>
     </div>
 
@@ -139,15 +136,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function deletarUsuario(id) {
-    if(confirm('Tem certeza que deseja excluir este usuário definitivamente?')) {
-        fetch(`/user/${id}/delete`, { method: 'DELETE' })
-        .then(() => window.location.href = '/user/');
-    }
-}
-</script>
 {% endblock %}

@@ -49,11 +49,11 @@
                 <div class="row g-2">
                     <div class="col-6">
                         <label class="form-label small fw-bold text-muted text-uppercase">Início</label>
-                        <input type="date" class="form-control form-control-sm" name="data_inicio" value="{{ data_inicio or '' }}">
+                        <input type="text" class="form-control form-control-sm mascara-data" name="data_inicio" maxlength="10" placeholder="dd/mm/aaaa" value="{{ data_inicio or '' }}">
                     </div>
                     <div class="col-6">
                         <label class="form-label small fw-bold text-muted text-uppercase">Fim</label>
-                        <input type="date" class="form-control form-control-sm" name="data_fim" value="{{ data_fim or '' }}">
+                        <input type="text" class="form-control form-control-sm mascara-data" name="data_fim" maxlength="10" placeholder="dd/mm/aaaa" value="{{ data_fim or '' }}">
     </div>
 </div>
 

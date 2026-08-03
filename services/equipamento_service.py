@@ -116,6 +116,9 @@ class EquipamentoService:
             registrar_log(current_user, 'criar', entidade=self.tipo.value if isinstance(self.tipo, TipoEquipamento) else self.tipo, entidade_id=novo_patrimonio.id, descricao=f'{self.template_prefix} criado.')
             flash(f'{self.var_name.capitalize()} criado com sucesso.', 'success')
             return redirect(f'/inventario/{self.template_prefix}/')
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return redirect(f'/inventario/{self.template_prefix}/')
         except Exception:
             logger.exception(f'Erro ao criar {self.template_prefix}')
             flash(f'Erro ao criar {self.template_prefix}. Verifique os dados e tente novamente.', 'danger')
@@ -173,6 +176,9 @@ class EquipamentoService:
             registrar_log(current_user, 'atualizar', entidade=self.tipo.value if isinstance(self.tipo, TipoEquipamento) else self.tipo, entidade_id=patr_id, descricao=f'{self.template_prefix} atualizado.')
             flash(f'{self.var_name.capitalize()} atualizado com sucesso.', 'success')
             return redirect(f'/inventario/{self.template_prefix}/')
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return redirect(f'/inventario/{self.template_prefix}/{patr_id}')
         except Exception:
             logger.exception(f'Erro ao atualizar {self.template_prefix}')
             flash(f'Erro ao atualizar {self.template_prefix}.', 'danger')

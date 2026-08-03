@@ -44,7 +44,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">TELEFONE</label>
-                                <input class="form-control" name="telefone" value="{{ usuario.telefone or '' }}" placeholder="(00) 00000-0000">
+                                <input class="form-control" name="telefone" id="telefone" value="{{ usuario.telefone or '' }}" placeholder="(00) 00000-0000">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">SETOR</label>
@@ -72,7 +72,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">DATA DE ADMISSÃO</label>
-                                <input class="form-control" type="date" name="data_admissao" value="{{ usuario.data_admissao }}">
+                                <input class="form-control" name="data_admissao" id="data_admissao" maxlength="10" placeholder="dd/mm/aaaa" value="{{ usuario.data_admissao.strftime('%d/%m/%Y') if usuario.data_admissao else '' }}">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">EMAIL CORPORATIVO</label>
@@ -128,7 +128,7 @@
                             <label class="form-check-label fw-bold" for="st_ativo">Usuário Ativo</label>
                         </div>
                         <label class="form-label small text-muted">DATA DESLIGAMENTO</label>
-                        <input type="date" class="form-control" name="data_desligamento" value="{{ usuario.data_desligamento }}">
+                        <input type="text" class="form-control" name="data_desligamento" id="data_desligamento" maxlength="10" placeholder="dd/mm/aaaa" value="{{ usuario.data_desligamento.strftime('%d/%m/%Y') if usuario.data_desligamento else '' }}">
                     </div>
                 </div>
             </div>
@@ -190,5 +190,39 @@
             .then(r => r.text())
             .then(html => cargoSelect.innerHTML = html);
     });
+
+    const inputTelefone = document.getElementById('telefone');
+    inputTelefone.addEventListener('input', function() {
+        let digits = this.value.replace(/\D/g, '').slice(0, 11);
+        if (digits.length > 10) {
+            this.value = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+        } else if (digits.length > 6) {
+            this.value = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+        } else if (digits.length > 2) {
+            this.value = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+        } else if (digits.length > 0) {
+            this.value = `(${digits}`;
+        } else {
+            this.value = '';
+        }
+    });
+    inputTelefone.dispatchEvent(new Event('input'));
+
+    function mascaraData(input) {
+        input.addEventListener('input', function() {
+            let digits = this.value.replace(/\D/g, '').slice(0, 8);
+            if (digits.length > 4) {
+                this.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+            } else if (digits.length > 2) {
+                this.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+            } else if (digits.length > 0) {
+                this.value = digits;
+            } else {
+                this.value = '';
+            }
+        });
+    }
+    mascaraData(document.getElementById('data_admissao'));
+    mascaraData(document.getElementById('data_desligamento'));
 </script>
 {% endblock %}

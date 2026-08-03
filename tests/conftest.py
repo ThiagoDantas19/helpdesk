@@ -2,7 +2,7 @@ import os
 import re
 import pytest
 from peewee import SqliteDatabase
-from database.database import db
+from database.database import db, unaccent
 from database.models.usuarios import Setor, Cargo, User
 from database.models.equipamentos import (
     Patrimonio, Computador, Celular, NumeroTelefone, TelefoneIP, Impressora, ItemDiverso,
@@ -31,6 +31,7 @@ TABELAS = [
 @pytest.fixture(autouse=True)
 def setup_db():
     mem_db = SqliteDatabase(':memory:')
+    mem_db.register_function(unaccent, 'unaccent')
     db.initialize(mem_db)
     db.connect()
     db.execute_sql('PRAGMA foreign_keys=ON')

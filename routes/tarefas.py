@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from database.models.tarefa import Tarefa
-from datetime import date
+from datetime import date, datetime
 import calendar
 
 calendar.setfirstweekday(calendar.SUNDAY)
@@ -37,9 +37,12 @@ def criar():
     vencimento = data.get('data_vencimento')
     if vencimento:
         try:
-            vencimento = date.fromisoformat(vencimento)
-        except (ValueError, TypeError):
-            return jsonify({'erro': 'Data inválida'}), 400
+            vencimento = datetime.strptime(vencimento, '%d/%m/%Y').date()
+        except ValueError:
+            try:
+                vencimento = date.fromisoformat(vencimento)
+            except (ValueError, TypeError):
+                return jsonify({'erro': 'Data inválida. Use o formato dd/mm/aaaa'}), 400
     tarefa = Tarefa.create(usuario=current_user.id, titulo=titulo, data_vencimento=vencimento)
     return jsonify({
         'id': tarefa.id,

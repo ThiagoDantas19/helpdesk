@@ -73,12 +73,12 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold small text-muted text-uppercase">Telefone Pessoal</label>
-                        <input class="form-control" name="telefone" placeholder="(00) 00000-0000" />
+                        <input class="form-control" name="telefone" id="telefone" placeholder="(00) 00000-0000" />
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold small text-muted text-uppercase">Data de Admissão</label>
-                        <input class="form-control" type="date" name="data_admissao" />
+                        <input class="form-control" name="data_admissao" id="data_admissao" placeholder="dd/mm/aaaa" maxlength="10" />
                     </div>
 
                     <div class="col-md-4">
@@ -248,5 +248,37 @@
         selectCargo.innerHTML = '<option value="">Selecione o setor primeiro...</option>';
       }
     });
+
+    const inputTelefone = document.getElementById('telefone');
+    inputTelefone.addEventListener('input', function() {
+      let digits = this.value.replace(/\D/g, '').slice(0, 11);
+      if (digits.length > 10) {
+        this.value = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+      } else if (digits.length > 6) {
+        this.value = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+      } else if (digits.length > 2) {
+        this.value = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+      } else if (digits.length > 0) {
+        this.value = `(${digits}`;
+      } else {
+        this.value = '';
+      }
+    });
+
+    function mascaraData(input) {
+      input.addEventListener('input', function() {
+        let digits = this.value.replace(/\D/g, '').slice(0, 8);
+        if (digits.length > 4) {
+          this.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+        } else if (digits.length > 2) {
+          this.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        } else if (digits.length > 0) {
+          this.value = digits;
+        } else {
+          this.value = '';
+        }
+      });
+    }
+    mascaraData(document.getElementById('data_admissao'));
 </script>
 {% endblock %}

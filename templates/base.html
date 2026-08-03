@@ -150,6 +150,24 @@
       });
   });
   </script>
+  <script>
+  function mascaraData(input) {
+      if (!input) return;
+      input.addEventListener('input', function() {
+          let digits = this.value.replace(/\D/g, '').slice(0, 8);
+          if (digits.length > 4) {
+              this.value = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+          } else if (digits.length > 2) {
+              this.value = digits.slice(0, 2) + '/' + digits.slice(2);
+          } else {
+              this.value = digits;
+          }
+      });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('input.mascara-data').forEach(mascaraData);
+  });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

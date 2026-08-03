@@ -6,8 +6,18 @@ from database.models.usuarios import User
 from database.models.equipamentos import Patrimonio, Computador, Celular, TelefoneIP, Impressora, ItemDiverso
 from database.models.log import registrar_log
 from utils.time import utcnow
+from datetime import datetime
 
 emprestimo_route = Blueprint('emprestimo', __name__)
+
+
+def _parse_data(data_str):
+    if not data_str:
+        return None
+    try:
+        return datetime.strptime(data_str, '%d/%m/%Y').date()
+    except ValueError:
+        return False
 
 
 @emprestimo_route.route('/', methods=['GET'])
@@ -56,11 +66,15 @@ def form():
 def criar():
     patrimonio_id = request.form.get('patrimonio_id', type=int)
     usuario_id = request.form.get('usuario_id', type=int)
-    data_devolucao_prevista = request.form.get('data_devolucao_prevista') or None
+    data_devolucao_prevista = _parse_data(request.form.get('data_devolucao_prevista'))
     observacoes = request.form.get('observacoes') or None
 
     if not patrimonio_id or not usuario_id:
         flash('Patrimônio e usuário são obrigatórios.', 'danger')
+        return redirect('/emprestimo/new')
+
+    if data_devolucao_prevista is False:
+        flash('Data de devolução inválida. Use o formato dd/mm/aaaa.', 'danger')
         return redirect('/emprestimo/new')
 
     patrimonio = Patrimonio.get_by_id(patrimonio_id)

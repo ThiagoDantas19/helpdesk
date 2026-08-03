@@ -12,8 +12,18 @@ from utils.constants import TipoEquipamento, TipoAcesso
 from utils.compartilhado import salvar_anexos_chamado, UPLOAD_DIR
 from utils.time import utcnow
 from peewee import prefetch
+from datetime import datetime
 
 task_route = Blueprint('task', __name__)
+
+
+def _parse_filtro_data(data_str):
+    if not data_str:
+        return ''
+    try:
+        return datetime.strptime(data_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+    except ValueError:
+        return data_str
 
 
 @task_route.route('/', methods=['GET'])
@@ -23,8 +33,10 @@ def lista_chamados():
     status = request.args.get('status', '')
     categoria = request.args.get('categoria', '')
     prioridade = request.args.get('prioridade', '')
-    data_inicio = request.args.get('data_inicio', '')
-    data_fim = request.args.get('data_fim', '')
+    data_inicio_raw = request.args.get('data_inicio', '')
+    data_fim_raw = request.args.get('data_fim', '')
+    data_inicio = _parse_filtro_data(data_inicio_raw)
+    data_fim = _parse_filtro_data(data_fim_raw)
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 25, type=int)
 
@@ -57,7 +69,7 @@ def lista_chamados():
     return render_template(template,
                            chamados=chamados,
                            titulo=titulo, status=status, categoria=categoria, prioridade=prioridade,
-                           data_inicio=data_inicio, data_fim=data_fim,
+                           data_inicio=data_inicio_raw, data_fim=data_fim_raw,
                            page=page, per_page=per_page, total=total, pages=pages)
 
 

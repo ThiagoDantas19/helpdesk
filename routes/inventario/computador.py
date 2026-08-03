@@ -5,6 +5,16 @@ from utils.constants import TipoEquipamento
 from database.models.equipamentos import Computador, AuditoriaComputador
 from routes.inventario import inventario_route
 from services.equipamento_service import EquipamentoService
+from datetime import datetime
+
+
+def _parse_data(data_str):
+    if not data_str:
+        return None
+    try:
+        return datetime.strptime(data_str, '%d/%m/%Y').date()
+    except ValueError:
+        return False
 
 
 service = EquipamentoService(
@@ -56,19 +66,25 @@ def _csv_row(a, d):
 
 
 def _extra_create(data):
+    data_fabricacao = _parse_data(data.get('data_fabricacao'))
+    if data_fabricacao is False:
+        raise ValueError('Data de fabricação inválida. Use o formato dd/mm/aaaa.')
     return {
         'tag': data.get('tag'),
         'nome_ad': data.get('nome_ad'),
         'numero_serie': data.get('numero_serie'),
-        'data_fabricacao': data.get('data_fabricacao') or None,
+        'data_fabricacao': data_fabricacao,
     }
 
 
 def _extra_update(obj, data):
+    data_fabricacao = _parse_data(data.get('data_fabricacao'))
+    if data_fabricacao is False:
+        raise ValueError('Data de fabricação inválida. Use o formato dd/mm/aaaa.')
     obj.tag = data.get('tag')
     obj.nome_ad = data.get('nome_ad')
     obj.numero_serie = data.get('numero_serie')
-    obj.data_fabricacao = data.get('data_fabricacao') or None
+    obj.data_fabricacao = data_fabricacao
     obj.save()
 
 
