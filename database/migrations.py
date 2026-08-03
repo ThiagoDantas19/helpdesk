@@ -126,4 +126,66 @@ def executar_migracoes():
             else:
                 logger.exception('v008_observacoes_devolucao ERRO')
 
+    if 'v009_email_opcional' not in executadas:
+        try:
+            db.execute_sql('PRAGMA foreign_keys = OFF')
+            db.execute_sql('BEGIN')
+            db.execute_sql("""
+                CREATE TABLE user_novo (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    nome_completo VARCHAR(255) NOT NULL,
+                    email VARCHAR(255),
+                    telefone VARCHAR(255),
+                    setor_id INTEGER NOT NULL,
+                    cargo_id INTEGER NOT NULL,
+                    ativo INTEGER NOT NULL,
+                    tipo_acesso VARCHAR(255) NOT NULL,
+                    username VARCHAR(255),
+                    password_hash VARCHAR(255),
+                    data_admissao DATE,
+                    acesso_ad INTEGER NOT NULL,
+                    acesso_sistema INTEGER NOT NULL,
+                    acesso_sharepoint INTEGER NOT NULL,
+                    biometria_dedo INTEGER NOT NULL,
+                    biometria_facial INTEGER NOT NULL,
+                    perfil_intelbras VARCHAR(255),
+                    email_corporativo VARCHAR(255),
+                    data_desligamento DATE,
+                    tipo_vinculo VARCHAR(255) NOT NULL DEFAULT 'efetivo',
+                    observacoes TEXT,
+                    FOREIGN KEY ("setor_id") REFERENCES "setor" ("id"),
+                    FOREIGN KEY ("cargo_id") REFERENCES "cargo" ("id")
+                )
+            """)
+            db.execute_sql("""
+                INSERT INTO user_novo (
+                    id, nome_completo, email, telefone, setor_id, cargo_id, ativo,
+                    tipo_acesso, username, password_hash, data_admissao, acesso_ad,
+                    acesso_sistema, acesso_sharepoint, biometria_dedo, biometria_facial,
+                    perfil_intelbras, email_corporativo, data_desligamento, tipo_vinculo,
+                    observacoes
+                )
+                SELECT
+                    id, nome_completo, email, telefone, setor_id, cargo_id, ativo,
+                    tipo_acesso, username, password_hash, data_admissao, acesso_ad,
+                    acesso_sistema, acesso_sharepoint, biometria_dedo, biometria_facial,
+                    perfil_intelbras, email_corporativo, data_desligamento, tipo_vinculo,
+                    observacoes
+                FROM user
+            """)
+            db.execute_sql('DROP TABLE user')
+            db.execute_sql('ALTER TABLE user_novo RENAME TO user')
+            db.execute_sql('CREATE UNIQUE INDEX "user_email" ON "user" ("email")')
+            db.execute_sql('CREATE INDEX "user_setor_id" ON "user" ("setor_id")')
+            db.execute_sql('CREATE INDEX "user_cargo_id" ON "user" ("cargo_id")')
+            db.execute_sql('CREATE UNIQUE INDEX "user_username" ON "user" ("username")')
+            db.execute_sql('COMMIT')
+            db.execute_sql('PRAGMA foreign_keys = ON')
+            marcar_executada('v009_email_opcional')
+            logger.info('v009_email_opcional OK')
+        except Exception:
+            db.execute_sql('ROLLBACK')
+            db.execute_sql('PRAGMA foreign_keys = ON')
+            logger.exception('v009_email_opcional ERRO')
+
     logger.info('Todas as migracoes concluidas.')

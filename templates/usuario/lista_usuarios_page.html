@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <div [c-container]>
+    <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
@@ -90,6 +90,14 @@
                             <a href="/user/{{ u.id }}/edit" class="btn btn-sm btn-outline-secondary border-0" title="Editar">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
+                            {% if u.id != current_user.id %}
+                            <button class="btn btn-sm btn-outline-danger border-0" title="Excluir"
+                                    c-delete="/user/{{ u.id }}/delete"
+                                    c-redirect="/user/"
+                                    onclick="return confirm('Excluir o usuário &#39;{{ u.nome_completo }}&#39; definitivamente?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

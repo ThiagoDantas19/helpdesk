@@ -62,9 +62,9 @@ def criar_usuario():
     data = request.form
 
     nome_completo = data.get('nome_completo', '').strip()
-    email = data.get('email', '').strip()
-    if not nome_completo or not email:
-        flash('Nome completo e e-mail são obrigatórios.', 'danger')
+    email = data.get('email', '').strip() or None
+    if not nome_completo:
+        flash('Nome completo é obrigatório.', 'danger')
         return redirect('/user/new')
 
     username = data.get('username', '').strip() or None
@@ -124,7 +124,7 @@ def update_usuario(user_id):
     data = request.form
 
     usuario.nome_completo = data.get('nome_completo')
-    usuario.email = data.get('email')
+    usuario.email = data.get('email', '').strip() or None
     username = data.get('username', '').strip() or None
     if username and User.select().where(User.username == username, User.id != user_id).first():
         flash('Este nome de usuário já está em uso.', 'danger')
@@ -181,6 +181,8 @@ def buscar_cargos():
 @login_required
 @admin_required
 def deletar_usuario(user_id):
+    if user_id == current_user.id:
+        return jsonify({'deleted': 'error', 'message': 'Você não pode excluir a si mesmo.'}), 400
     usuario = User.get_by_id(user_id)
     username = usuario.username
     usuario.delete_instance()

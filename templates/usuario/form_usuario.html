@@ -22,7 +22,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold small text-muted text-uppercase">Email Pessoal</label>
-                        <input class="form-control" type="email" name="email" required placeholder="email@exemplo.com" />
+                        <input class="form-control" type="email" name="email" placeholder="email@exemplo.com (opcional)" />
                     </div>
 
                     <div class="col-md-4">
@@ -141,7 +141,50 @@
 
 {% block scripts %}
 <script>
-    // Lógica para carregar cargos dinamicamente conforme o setor
+    const PARTICULAS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'a', 'o', 'del', 'y', 'la', 'las', 'los', 'el', 'van', 'von']);
+
+    function normalizar(texto) {
+        return texto
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(Boolean);
+    }
+
+    function gerarLogin(nome) {
+        const nomes = normalizar(nome);
+        if (!nomes.length) return '';
+        const significativos = nomes.filter(p => !PARTICULAS.has(p));
+        if (!significativos.length) return nomes[0];
+        const primeiro = significativos[0];
+        const ultimo = significativos[significativos.length - 1];
+        return primeiro === ultimo ? primeiro : primeiro + '.' + ultimo;
+    }
+
+    const inputNome = document.querySelector('[name="nome_completo"]');
+    const inputUsername = document.querySelector('[name="username"]');
+    const inputPassword = document.querySelector('[name="password"]');
+
+    let passwordAuto = false;
+
+    inputNome.addEventListener('input', function() {
+        const login = gerarLogin(this.value);
+        if (login) {
+            inputUsername.value = login;
+            if (passwordAuto || !inputPassword.value) {
+                inputPassword.value = login;
+                passwordAuto = true;
+            }
+        }
+    });
+
+    inputPassword.addEventListener('input', function() {
+        passwordAuto = false;
+    });
+
     document.getElementById('setor').addEventListener('change', function() {
       const setorId = this.value;
       const selectCargo = document.getElementById('cargo');

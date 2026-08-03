@@ -22,7 +22,7 @@ class Cargo(Model):
 class User(UserMixin, Model):
     id = AutoField()
     nome_completo = CharField()
-    email = CharField(unique=True)
+    email = CharField(unique=True, null=True)
     telefone = CharField(null=True)
 
     setor = ForeignKeyField(Setor, backref='usuarios')
