@@ -18,6 +18,6 @@ def init_db(db_path='customermanagement.db'):
         'journal_mode': 'wal',
         'foreign_keys': 1,
     })
-    database.create_function('unaccent', 1, unaccent)
+    database.register_function(unaccent, 'unaccent', 1)
     db.initialize(database)
     return database

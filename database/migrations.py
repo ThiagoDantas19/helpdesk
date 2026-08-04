@@ -188,4 +188,54 @@ def executar_migracoes():
             db.execute_sql('PRAGMA foreign_keys = ON')
             logger.exception('v009_email_opcional ERRO')
 
+    if 'v010_chamado_atualizado_em_null' not in executadas:
+        try:
+            db.execute_sql('PRAGMA foreign_keys = OFF')
+            db.execute_sql('BEGIN')
+            db.execute_sql("""
+                CREATE TABLE chamado_novo (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    titulo VARCHAR(255) NOT NULL,
+                    descricao TEXT NOT NULL,
+                    status VARCHAR(255) NOT NULL,
+                    prioridade VARCHAR(255) NOT NULL,
+                    categoria VARCHAR(255),
+                    resposta TEXT,
+                    nota_interna TEXT,
+                    funcionario_id INTEGER NOT NULL,
+                    operador_id INTEGER,
+                    criado_em DATETIME NOT NULL,
+                    atualizado_em DATETIME,
+                    fechado_em DATETIME,
+                    FOREIGN KEY ("funcionario_id") REFERENCES "user" ("id"),
+                    FOREIGN KEY ("operador_id") REFERENCES "user" ("id") ON DELETE SET NULL
+                )
+            """)
+            db.execute_sql("""
+                INSERT INTO chamado_novo (
+                    id, titulo, descricao, status, prioridade, categoria, resposta,
+                    nota_interna, funcionario_id, operador_id, criado_em,
+                    atualizado_em, fechado_em
+                )
+                SELECT
+                    id, titulo, descricao, status, prioridade, categoria, resposta,
+                    nota_interna, funcionario_id, operador_id, criado_em,
+                    atualizado_em, fechado_em
+                FROM chamado
+            """)
+            db.execute_sql('DROP TABLE chamado')
+            db.execute_sql('ALTER TABLE chamado_novo RENAME TO chamado')
+            db.execute_sql('CREATE INDEX "chamado_funcionario_id" ON "chamado" ("funcionario_id")')
+            db.execute_sql('CREATE INDEX "chamado_operador_id" ON "chamado" ("operador_id")')
+            db.execute_sql('CREATE INDEX "chamado_status_criado_em" ON "chamado" ("status", "criado_em")')
+            db.execute_sql('CREATE INDEX "chamado_funcionario_id_criado_em" ON "chamado" ("funcionario_id", "criado_em")')
+            db.execute_sql('COMMIT')
+            db.execute_sql('PRAGMA foreign_keys = ON')
+            marcar_executada('v010_chamado_atualizado_em_null')
+            logger.info('v010_chamado_atualizado_em_null OK')
+        except Exception:
+            db.execute_sql('ROLLBACK')
+            db.execute_sql('PRAGMA foreign_keys = ON')
+            logger.exception('v010_chamado_atualizado_em_null ERRO')
+
     logger.info('Todas as migracoes concluidas.')
