@@ -9,6 +9,8 @@ Este manual cobre instalação, configuração e o dia a dia de cada módulo.
 
 - Python 3.12+ (desenvolvido/testado com 3.14)
 - Acesso à internet apenas na primeira instalação (pip e CDNs)
+- **Windows:** o pacote `tzdata` é instalado automaticamente via `requirements.txt`
+  (necessário para o fuso local `America/Sao_Paulo`)
 
 ## 2. Instalação (primeira vez)
 
@@ -133,6 +135,8 @@ Controla equipamento emprestado a funcionários.
 
 - **Usuários**: criar/editar com perfil (usuário/técnico/admin), setor, cargo,
   vínculo e observações; inativar sem excluir
+- O campo **email é opcional** — deixe em branco para cadastros sem email
+- O **login (username)** é verificado em tempo real (campo avisa se já existe)
 - **Setores/Cargos**: organização hierárquica (setor → cargos)
 - Alterar cargo atualiza o vínculo do usuário (busca AJAX de cargos do setor)
 
@@ -180,10 +184,11 @@ gunicorn -w 1 -b 0.0.0.0:8000 main:app
 | Upload negado | Verifique extensão, tamanho (máx. 55 MB) e conteúdo (magic bytes) |
 | Página 500 | Veja os logs do terminal; use `FLASK_DEBUG=1` para detalhes em desenvolvimento |
 | Relatório mensal vazio | Nenhuma auditoria de celular no mês corrente |
+| Erro de fuso horário no Windows | `pip install -r requirements.txt` (instala o `tzdata`) |
 
 ## 17. Testes
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest tests/ -q     # 143 testes
+python -m pytest tests/ -q     # 160 testes
 ```

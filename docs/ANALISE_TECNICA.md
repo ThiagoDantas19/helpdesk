@@ -1,7 +1,7 @@
 # Análise Técnica Completa — HelpDesk IT
 
 > Documento de arquitetura, segurança e histórico do projeto.
-> Versão: 2026-07-31 (pós-melhorias) · Suíte de testes: **143 passando**
+> Versão: 2026-08-05 · Suíte de testes: **160 passando**
 
 ---
 
@@ -17,7 +17,7 @@
 | CSRF | Flask-WTF `CSRFProtect` global + meta tag + injeção automática no JS |
 | Cache | Flask-Caching (`SimpleCache` por padrão; `RedisCache` configurável) |
 | Frontend | Bootstrap 5.3, CSS/JS customizados (`style.css`, `cru.js`) |
-| Testes | pytest 9.1.1 — 143 testes em 10 arquivos + conftest |
+| Testes | pytest 9.1.1 — 160 testes em 12 arquivos + conftest |
 | Uploads | Pasta `uploads/`, limite de 55 MB, validação por magic bytes |
 
 ---
@@ -36,7 +36,7 @@ crud/
 │
 ├── database/
 │   ├── database.py                  # db = Proxy() + init_db() (desacopla inicialização)
-│   ├── migrations.py                # 8 migrações versionadas (v001 → v008, em ordem)
+│   ├── migrations.py                # 11 migrações versionadas (v001 → v011, em ordem)
 │   ├── registry.py                  # Registro central de modelos para create_tables
 │   ├── seed.py                      # Setores/cargos (estrutura genérica mínima) + admin padrão
 │   ├── seed_personalizado.py        # (LOCAL, fora do git) estrutura real da unidade — sobrescreve o seed genérico
@@ -121,7 +121,7 @@ nome, tipo, setor, responsável, ativo), `computador`, `celular`, `numerotelefon
 **Operacional:** `chamado`, `chamadoequipamento` (vínculo N:N com índice em `equipamento_id`),
 `chamadoanexo`, `emprestimo` (com `observacoes_devolucao`), `tarefa`, `credencial`, `logentry`
 
-### Migrações (8, executadas em ordem na inicialização)
+### Migrações (11, executadas em ordem na inicialização)
 
 | Versão | Ação |
 |---|---|
@@ -133,6 +133,9 @@ nome, tipo, setor, responsável, ativo), `computador`, `celular`, `numerotelefon
 | v006 | `user.observacoes` (TEXT) |
 | v007 | Cria tabela `emprestimo` |
 | v008 | `emprestimo.observacoes_devolucao` (TEXT) |
+| v009 | Recria `user` com `email` opcional (nullable) + índices únicos (`user_email`, `user_username`) |
+| v010 | Recria `chamado` com `atualizado_em` anulável + índices de status/data |
+| v011 | `UPDATE user SET email = NULL WHERE email = 'None'` (corrige dados corrompidos) |
 
 O controle é feito pela tabela `_migracoes` (versão + timestamp). As operações são
 idempotentes (tratam "duplicate column") — seguras para rodar a cada startup.
@@ -193,8 +196,8 @@ Implementação (`routes/auth.py`):
 **Dashboard** — `home_route`: `GET /`
 
 **Usuários** — `user_route`
-- `GET/POST /user/` · `GET /user/new` · `GET /user/<id>` · `GET/POST /user/<id>/edit`
-- `DELETE /user/<id>/delete` · `GET /user/buscar-cargos` (AJAX)
+- `GET/POST /user/` · `GET /user/new` · `GET /user/<id>` · `GET /user/<id>/edit` · `POST /user/<id>/update`
+- `GET /user/buscar-cargos` (AJAX) · `GET /user/verificar-username` (AJAX, exclusão do próprio id)
 
 **Chamados** — `task_route`
 - `GET/POST /task/` · `GET /task/new` · `GET /task/<os_id>` · `GET/POST /task/<os_id>/edit`
@@ -224,6 +227,7 @@ impressora/item)
 - `GET /inventario/<tipo>/<patr_id>` (detalhes) · `GET/POST .../edit|update`
 - `DELETE .../delete` · `GET/POST .../auditar` · `GET .../auditorias` (histórico)
 - `GET .../auditorias/export` (CSV) · `GET /inventario/celular/export/mensal` (relatório)
+- `GET /inventario/patrimonio/verificar` (AJAX — código de patrimônio único, sem perder dados do form)
 - `POST /inventario/auditoria/<audit_id>/anexar` · `GET /inventario/auditoria/<id>/edit`
 - `POST /inventario/auditoria/<id>/update` · `DELETE /inventario/auditoria/anexo/<id>/delete`
 - `POST /inventario/item/<patr_id>/foto` · `DELETE /inventario/foto-item/<anexo_id>/delete`
@@ -242,6 +246,9 @@ impressora/item)
 - Tarefas pessoais com calendário
 - Log de auditoria completo (quem fez o quê, quando, IP)
 - CRUD de usuários, setores e cargos
+- **Usuários**: email opcional (sem validação de formato), máscara de telefone e datas
+  pt-BR, busca sem acentos, filtro por vínculo, verificação em tempo real de username
+  (AJAX) e patrimônio único no inventário
 - **Setup first-run e seed via interface**: `seed.py` aplica uma estrutura genérica
   mínima (setor TI + cargos) no repositório público; se o arquivo local
   `database/seed_personalizado.py` existir (fora do git), ele é usado no lugar —
@@ -259,8 +266,9 @@ impressora/item)
   genérico remove vínculos e arquivos.
 - **Config Factory**: `configure_all(skip_db_init=bool)` separa app de banco; comandos
   CLI (`flask seed`).
-- **Timezone**: `utcnow()` em `utils/time.py` em todos os modelos/rotas; `naive_dt` para
-  exibição.
+- **Timezone**: `utcnow()` em `utils/time.py` em todos os modelos/rotas;
+  exibição no fuso local via `zoneinfo` (`America/Sao_Paulo`) — requer `tzdata`
+  no Windows.
 - **Enums**: `TipoEquipamento`, `StatusChamado`, `PrioridadeChamado`, `TipoAcesso` —
   sem magic strings.
 - **Cache**: `utils/cache.py` envolve Flask-Caching. `get_form_context()` guarda **dicts**
@@ -297,7 +305,8 @@ impressora/item)
 
 Python 3.14 · Flask 3.1.3 · Flask-Login 0.6.3 · Flask-WTF 1.2.2 · Flask-Caching 2.4.1 ·
 Peewee 4.0.5 (playhouse.migrate) · Werkzeug 3.1.8 · cryptography 44.0.0 ·
-python-dotenv 1.1.0 · SQLite (WAL) · Bootstrap 5.3.3 · pytest 9.1.1
+python-dotenv 1.1.0 · tzdata 2025.2 (zoneinfo no Windows) · SQLite (WAL) ·
+Bootstrap 5.3.3 · pytest 9.1.1
 
 ---
 
@@ -317,6 +326,29 @@ python-dotenv 1.1.0 · SQLite (WAL) · Bootstrap 5.3.3 · pytest 9.1.1
 - Os 12 itens listados na seção 8 ("Melhorias recentes"). **143 testes passando.**
 - `main.py`: debug agora controlado por `FLASK_DEBUG` (env), não hardcoded.
 - Documentação técnica e manual de uso adicionados em `docs/`.
+
+### Sessão 5 — Usuários e Organização (2026-08)
+- `seed.py` genérico para o repositório; estrutura organizacional real fora do git
+  (`seed_personalizado.py` local, sobrescreve o genérico).
+- Migração **v009**: `email` opcional (nullable) com índices únicos — recriação da
+  tabela `user` dentro de transação (rollback seguro em falha).
+- Exclusão de usuário na listagem; login/senha automáticos na criação.
+- Verificação em tempo real de username (AJAX `verificar-username`).
+- Máscara de telefone e datas pt-BR, filtro por vínculo, busca sem acentos.
+- Migração **v010**: `chamado.atualizado_em` anulável + registro da função
+  `unaccent` no SQLite (corrige erro ao abrir chamado).
+
+### Sessão 6 — Horário, Inventário e Correções (2026-08-05)
+- **Timezone corrigido**: exibição de timestamps no fuso local
+  (`America/Sao_Paulo`) via `zoneinfo` em `utils/time.py`; dependência `tzdata`
+  adicionada (obrigatória no Windows).
+- **Inventário**: código de patrimônio único — `GET /inventario/patrimonio/verificar`
+  (AJAX) valida em tempo real sem perder os dados do formulário
+  (`cruInitPatrimonioValidade`, `cruRepopularFormulario`).
+- **Bug 500 na edição de usuário sem email**: o template renderizava `value="None"`
+  e o submit gravava a string `'None'`, conflitando com a UNIQUE de email →
+  migração **v011** limpa os registros corrompidos (`email = 'None'` → NULL).
+- **160 testes passando.**
 
 ---
 
@@ -345,6 +377,6 @@ python-dotenv 1.1.0 · SQLite (WAL) · Bootstrap 5.3.3 · pytest 9.1.1
 ## 12. Executando Testes
 
 ```bash
-python -m pytest tests/ -q        # 143 testes (~1 min)
+python -m pytest tests/ -q        # 160 testes (~1 min)
 python -m pytest tests/test_limpeza_delete.py -q   # subset
 ```

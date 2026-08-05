@@ -15,8 +15,8 @@ Internal IT helpdesk and asset management web app with periodic equipment audits
 - **Chamados / tickets** — abertura e acompanhamento com vínculo de equipamentos.
 - **Empréstimos** — registro de empréstimo/devolução de equipamentos entre funcionários.
 - **Logs de auditoria** — trilha de ações (criar, editar, deletar) registrada por usuário.
-- **Migrações versionadas** — banco evolui de forma incremental na inicialização.
-- **143 testes automatizados** (pytest) cobrindo rotas, permissões e serviços.
+- **Migrações versionadas** — banco evolui de forma incremental na inicialização (v001 → v011).
+- **160 testes automatizados** (pytest) cobrindo rotas, permissões e serviços.
 
 ### Documentação
 - 📖 [Manual de Uso](docs/MANUAL_DE_USO.md) — instalação, primeiros passos e uso de cada módulo (PT-BR).
@@ -27,6 +27,7 @@ Internal IT helpdesk and asset management web app with periodic equipment audits
 - **ORM:** Peewee 4.0 (SQLite com WAL)
 - **Frontend:** Jinja2, HTML/CSS vanilla (sem frameworks)
 - **Testes:** pytest
+- **Timezone:** `zoneinfo` + pacote `tzdata` (obrigatório no Windows)
 
 ### Como rodar
 ```bash
@@ -73,6 +74,8 @@ utils/               Cache, uploads, constantes, helpers
 ### Notas de produção
 O projeto usa SQLite com WAL — adequado para uso interno com um único processo. Para múltiplos workers/processos: use `CACHE_TYPE=RedisCache` + `CACHE_REDIS_URL` no `.env` e considere migrar para PostgreSQL (o Peewee abstrai a troca).
 
+> **Windows:** o fuso local (`America/Sao_Paulo`) via `zoneinfo` exige o pacote `tzdata`, já incluído no `requirements.txt`.
+
 ---
 
 ## English
@@ -84,8 +87,8 @@ O projeto usa SQLite com WAL — adequado para uso interno com um único process
 - **Service tickets** — create and track tickets linked to assets.
 - **Equipment loans** — track loans/returns between employees.
 - **Audit logs** — full action trail (create, edit, delete) per user.
-- **Versioned migrations** — incremental DB schema updates on startup.
-- **143 automated tests** (pytest) covering routes, permissions and services.
+- **Versioned migrations** — incremental DB schema updates on startup (v001 → v011).
+- **160 automated tests** (pytest) covering routes, permissions and services.
 
 ### Docs
 - 📖 [User Manual](docs/MANUAL_DE_USO.md) — installation, first steps and module usage (PT-BR).
@@ -96,6 +99,7 @@ O projeto usa SQLite com WAL — adequado para uso interno com um único process
 - **ORM:** Peewee 4.0 (SQLite with WAL)
 - **Frontend:** Jinja2, vanilla HTML/CSS
 - **Tests:** pytest
+- **Timezone:** `zoneinfo` + `tzdata` package (required on Windows)
 
 ### Run locally
 ```bash
@@ -124,3 +128,5 @@ python -m pytest tests/ -q
 
 ### Production notes
 Built on SQLite with WAL — great for single-process internal use. For multiple workers: set `CACHE_TYPE=RedisCache` + `CACHE_REDIS_URL` in `.env` and consider PostgreSQL (Peewee makes the switch straightforward).
+
+> **Windows:** the local timezone (`America/Sao_Paulo`) via `zoneinfo` requires the `tzdata` package, already in `requirements.txt`.
