@@ -186,3 +186,31 @@ def test_hub_inventario_usuario_bloqueado(client):
 def test_hub_inventario_nao_autenticado(client):
     resp = client.get('/inventario/')
     assert resp.status_code == 302
+
+
+def test_lista_celular_marca_auditoria_do_mes(client):
+    from datetime import timedelta
+    from utils.time import utcnow
+
+    login(client)
+    setor = Setor.select().first()
+
+    pat_mes = Patrimonio.create(codigo_etiqueta='0101', nome_identificador='Cel Mes', tipo='celular', setor=setor, ativo=True)
+    Celular.create(patrimonio=pat_mes, modelo='Android')
+    pat_passado = Patrimonio.create(codigo_etiqueta='0102', nome_identificador='Cel Antigo', tipo='celular', setor=setor, ativo=True)
+    Celular.create(patrimonio=pat_passado, modelo='Android Antigo')
+
+    spec = {'apps_ok': True, 'fotos_ok': True, 'informacoes_ok': True, 'whatsapp_ok': True, 'avarias_ok': True}
+    criar_auditoria(pat_mes, {'status_geral_ok': True, 'observacoes': 'mes atual'}, spec, uploaded_by=1)
+    a = criar_auditoria(pat_passado, {'status_geral_ok': True, 'observacoes': 'mes passado'}, spec, uploaded_by=1)
+    Auditoria.update(data_auditoria=utcnow() - timedelta(days=35)).where(Auditoria.id == a.id).execute()
+
+    criar_tecnico()
+    login(client, 'tecnico', 'tecnico')
+    resp = client.get('/inventario/celular/')
+    assert resp.status_code == 200
+    corpo = resp.data.decode('utf-8')
+    linha_mes = corpo[corpo.index('0101'):corpo.index('0101') + 1800]
+    linha_antigo = corpo[corpo.index('0102'):corpo.index('0102') + 1800]
+    assert 'Auditoria do mês concluída' in linha_mes
+    assert 'Sem auditoria no mês' in linha_antigo

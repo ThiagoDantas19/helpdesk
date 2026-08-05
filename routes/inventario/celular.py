@@ -5,7 +5,7 @@ from flask import Response, render_template, request, redirect, jsonify
 from flask_login import login_required, current_user
 from routes.auth import admin_required, tecnico_required
 from utils.constants import TipoEquipamento
-from utils.time import hora_local, fuso_padrao, utcnow
+from utils.time import hora_local, fuso_padrao, utcnow, inicio_mes_utc, fim_mes_utc
 from database.models.equipamentos import (
     Celular, Patrimonio, NumeroTelefone, Auditoria, AuditoriaCelular
 )
@@ -82,7 +82,11 @@ def lista_celulares():
     celulares_q_page = celulares_q.paginate(page, POR_PAGINA)
     numeros_q = NumeroTelefone.select()
     celulares = prefetch(celulares_q_page, numeros_q)
-    return render_template('inventario/celular/lista.html', celulares=list(celulares), page=page, pages=pages, total=total)
+    auditados_mes = {a.patrimonio_id for a in Auditoria
+                     .select(Auditoria.patrimonio_id)
+                     .where(Auditoria.data_auditoria >= inicio_mes_utc(),
+                            Auditoria.data_auditoria < fim_mes_utc())}
+    return render_template('inventario/celular/lista.html', celulares=list(celulares), page=page, pages=pages, total=total, auditados_mes=auditados_mes)
 
 
 @inventario_route.route('/celular/new', methods=['GET'])

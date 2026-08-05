@@ -28,6 +28,7 @@
             <th>SETOR</th>
             <th>RESPONSÁVEL</th>
             <th class="text-center">STATUS</th>
+            <th class="text-center">AUD. MÊS</th>
             <th class="text-end pe-3">AÇÕES</th>
           </tr>
         </thead>
@@ -73,6 +74,13 @@
               <span class="badge rounded-pill bg-secondary-soft text-secondary border border-secondary px-3">Inativo</span>
               {% endif %}
             </td>
+            <td class="text-center">
+              {% if c.patrimonio.id in auditados_mes %}
+              <i class="bi bi-check-circle-fill text-success fs-5" title="Auditoria do mês concluída"></i>
+              {% else %}
+              <i class="bi bi-dash-circle text-muted fs-5" title="Sem auditoria no mês"></i>
+              {% endif %}
+            </td>
             <td class="text-end pe-3">
               <div class="btn-group">
                 <a href="/inventario/celular/{{ c.patrimonio.id }}" class="btn btn-sm btn-outline-secondary border-0" title="Ver Detalhes"><i class="bi bi-eye-fill"></i></a>
@@ -84,7 +92,7 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="7" class="text-center py-5">
+            <td colspan="8" class="text-center py-5">
               <i class="bi bi-phone text-muted display-4 d-block mb-3"></i>
               <p class="text-muted mb-0">Nenhum celular cadastrado no sistema.</p>
               <a href="/inventario/celular/new" class="btn btn-sm btn-link mt-2">Cadastrar agora</a>

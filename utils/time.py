@@ -29,6 +29,15 @@ def inicio_mes_utc():
     return inicio_local.replace(tzinfo=fuso_padrao()).astimezone(timezone.utc)
 
 
+def fim_mes_utc():
+    agora_local = hora_local(utcnow())
+    if agora_local.month == 12:
+        inicio_proximo = agora_local.replace(year=agora_local.year + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        inicio_proximo = agora_local.replace(month=agora_local.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    return inicio_proximo.replace(tzinfo=fuso_padrao()).astimezone(timezone.utc)
+
+
 def intervalo_dia_local_para_utc(data_str):
     """Converte 'AAAA-MM-DD' (dia local) no intervalo [inicio, fim) em UTC."""
     data = datetime.strptime(data_str, '%Y-%m-%d').date()
