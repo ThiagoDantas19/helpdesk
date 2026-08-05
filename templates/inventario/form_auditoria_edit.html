@@ -27,7 +27,7 @@
           <div class="row g-3">
             <div class="col-md-4">
               <small class="text-muted text-uppercase fw-bold d-block">Data</small>
-              <strong>{{ (auditoria.data_auditoria|naive).strftime('%d/%m/%Y %H:%M') }}</strong>
+              <strong>{{ (auditoria.data_auditoria|hora_local).strftime('%d/%m/%Y %H:%M') }}</strong>
             </div>
             <div class="col-md-4">
               <small class="text-muted text-uppercase fw-bold d-block">Técnico</small>

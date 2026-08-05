@@ -200,7 +200,7 @@
                 <span class="badge bg-secondary-soft text-secondary border border-secondary small">Aguardando</span>
                 {% endif %}
               </td>
-              <td class="text-end pe-3 text-muted small">{{ (c.criado_em|naive).strftime('%d/%m %H:%M') }}</td>
+              <td class="text-end pe-3 text-muted small">{{ (c.criado_em|hora_local).strftime('%d/%m %H:%M') }}</td>
             </tr>
             {% endfor %}
           </tbody>

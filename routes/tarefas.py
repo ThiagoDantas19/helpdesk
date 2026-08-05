@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from database.models.tarefa import Tarefa
+from utils.time import hora_local
 from datetime import date, datetime
 import calendar
 
@@ -23,7 +24,7 @@ def listar():
         'titulo': t.titulo,
         'concluida': t.concluida,
         'data_vencimento': t.data_vencimento.isoformat() if t.data_vencimento else None,
-        'criado_em': t.criado_em.isoformat()
+        'criado_em': hora_local(t.criado_em).isoformat()
     } for t in tarefas])
 
 

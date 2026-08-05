@@ -111,7 +111,7 @@
                   <div class="fw-bold">{{ chamado.titulo }}</div>
                   <div class="text-muted small">{{ chamado.categoria or 'Geral' }}</div>
                 </td>
-                <td class="small text-muted">{{ chamado.criado_em.strftime('%d/%m/%Y') }}</td>
+                <td class="small text-muted">{{ (chamado.criado_em|hora_local).strftime('%d/%m/%Y') }}</td>
                 <td class="text-center">
                   {% if chamado.status == 'aberto' %}
                     <span class="badge bg-primary text-white border-0">Aberto</span>
@@ -187,7 +187,7 @@
               </span>
             </div>
             <div class="small text-muted mb-2">
-              <i class="bi bi-calendar3 me-1"></i> {{ ultima_auditoria.data_auditoria.strftime('%d/%m/%Y %H:%M') }}
+              <i class="bi bi-calendar3 me-1"></i> {{ (ultima_auditoria.data_auditoria|hora_local).strftime('%d/%m/%Y %H:%M') }}
             </div>
             {% if ultima_auditoria.observacoes %}
             <div class="p-2 bg-light rounded small text-secondary border mb-2">

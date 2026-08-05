@@ -84,7 +84,7 @@
           <hr>
           <div class="text-start mb-3">
             <label class="text-muted small">Data do Empréstimo</label>
-            <div class="fw-bold">{{ (emp.data_emprestimo|naive).strftime('%d/%m/%Y %H:%M') }}</div>
+            <div class="fw-bold">{{ (emp.data_emprestimo|hora_local).strftime('%d/%m/%Y %H:%M') }}</div>
           </div>
           {% if emp.data_devolucao_prevista %}
           <div class="text-start mb-3">
@@ -95,7 +95,7 @@
           {% if emp.data_devolucao %}
           <div class="text-start">
             <label class="text-muted small">Devolvido em</label>
-            <div class="fw-bold">{{ (emp.data_devolucao|naive).strftime('%d/%m/%Y %H:%M') }}</div>
+            <div class="fw-bold">{{ (emp.data_devolucao|hora_local).strftime('%d/%m/%Y %H:%M') }}</div>
           </div>
           {% endif %}
         </div>

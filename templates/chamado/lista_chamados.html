@@ -116,7 +116,7 @@
                     <td class="ps-3 text-muted font-monospace">#{{ c.id }}</td>
                     <td>
                         <div class="fw-bold text-dark">{{ c.titulo }}</div>
-                        <small class="text-muted">{{ c.criado_em.strftime('%d/%m %H:%M') }}</small>
+                        <small class="text-muted">{{ (c.criado_em|hora_local).strftime('%d/%m %H:%M') }}</small>
                     </td>
                     <td>
                         <div class="small">{{ c.funcionario.nome_completo }}</div>

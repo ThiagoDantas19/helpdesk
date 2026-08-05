@@ -7,7 +7,7 @@ from flask_wtf.csrf import CSRFProtect
 from database.database import init_db, db
 from database.models.usuarios import User
 from database.registry import get_all_models
-from utils.time import naive_dt
+from utils.time import hora_local
 from utils.cache import init_cache
 from utils.constants import UPLOAD_DIR
 from routes.error_handlers import registrar_erros
@@ -45,7 +45,7 @@ def configure_all(app=None, skip_db_init=False):
     app.config['CACHE_DEFAULT_TIMEOUT'] = int(os.environ.get('CACHE_DEFAULT_TIMEOUT', '60'))
     app.config['CACHE_REDIS_URL'] = os.environ.get('CACHE_REDIS_URL')
 
-    app.template_filter('naive')(naive_dt)
+    app.template_filter('hora_local')(hora_local)
 
     login_manager.init_app(app)
     CSRFProtect(app)

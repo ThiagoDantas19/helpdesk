@@ -42,7 +42,7 @@
         <tbody>
           {% for a in auditorias %}
           <tr>
-            <td class="ps-3 small">{{ (a.data_auditoria|naive).strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="ps-3 small">{{ (a.data_auditoria|hora_local).strftime('%d/%m/%Y %H:%M') }}</td>
             <td class="small">{{ a.tecnico.nome_completo if a.tecnico else '—' }}</td>
             <td class="small">{{ a.setor_no_momento.nome if a.setor_no_momento else '—' }}</td>
             <td class="text-center">

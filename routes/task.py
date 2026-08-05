@@ -10,7 +10,7 @@ from database.models.usuarios import User, Setor
 from database.models.equipamentos import Patrimonio, Computador, Celular, TelefoneIP, Impressora, ItemDiverso
 from utils.constants import TipoEquipamento, TipoAcesso
 from utils.compartilhado import salvar_anexos_chamado, UPLOAD_DIR
-from utils.time import utcnow
+from utils.time import utcnow, hora_local, intervalo_dia_local_para_utc
 from peewee import prefetch
 from datetime import datetime
 
@@ -54,9 +54,17 @@ def lista_chamados():
     if prioridade:
         query = query.where(Chamado.prioridade == prioridade)
     if data_inicio:
-        query = query.where(Chamado.criado_em >= data_inicio)
+        try:
+            inicio_utc, _ = intervalo_dia_local_para_utc(data_inicio)
+            query = query.where(Chamado.criado_em >= inicio_utc)
+        except ValueError:
+            pass
     if data_fim:
-        query = query.where(Chamado.criado_em <= f"{data_fim} 23:59:59")
+        try:
+            _, fim_utc = intervalo_dia_local_para_utc(data_fim)
+            query = query.where(Chamado.criado_em < fim_utc)
+        except ValueError:
+            pass
 
     total = query.count()
     per_page = min(max(per_page, 10), 100)
@@ -357,11 +365,11 @@ def exportar_chamados_csv():
             c.funcionario.nome_completo,
             c.funcionario.setor.nome if c.funcionario.setor else '',
             c.operador.nome_completo if c.operador else '',
-            c.criado_em.strftime('%d/%m/%Y %H:%M') if c.criado_em else '',
-            c.atualizado_em.strftime('%d/%m/%Y %H:%M') if c.atualizado_em else '',
-            c.fechado_em.strftime('%d/%m/%Y %H:%M') if c.fechado_em else '',
+            hora_local(c.criado_em).strftime('%d/%m/%Y %H:%M') if c.criado_em else '',
+            hora_local(c.atualizado_em).strftime('%d/%m/%Y %H:%M') if c.atualizado_em else '',
+            hora_local(c.fechado_em).strftime('%d/%m/%Y %H:%M') if c.fechado_em else '',
             c.resposta or ''
         ])
     response = Response(si.getvalue(), mimetype='text/csv')
-    response.headers['Content-disposition'] = f'attachment; filename=chamados_{utcnow().strftime("%Y%m%d")}.csv'
+    response.headers['Content-disposition'] = f'attachment; filename=chamados_{hora_local(utcnow()).strftime("%Y%m%d")}.csv'
     return response

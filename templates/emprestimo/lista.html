@@ -53,7 +53,7 @@
             <td class="fw-medium">{{ e.patrimonio.nome_identificador }}</td>
             <td>{{ e.usuario.nome_completo }}</td>
             <td>{{ e.responsavel.nome_completo }}</td>
-            <td class="small">{{ (e.data_emprestimo|naive).strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="small">{{ (e.data_emprestimo|hora_local).strftime('%d/%m/%Y %H:%M') }}</td>
             <td class="small">{{ e.data_devolucao_prevista.strftime('%d/%m/%Y') if e.data_devolucao_prevista else '—' }}</td>
             <td class="text-center">
               {% if e.data_devolucao %}

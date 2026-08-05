@@ -34,11 +34,11 @@
     </div>
     <div class="flex-fill">
       <h6 class="fw-bold mb-0 text-secondary">Chamado Encerrado</h6>
-      <small class="text-muted">Este chamado foi finalizado em {{ chamado.fechado_em.strftime('%d/%m/%Y às %H:%M') }}</small>
+      <small class="text-muted">Este chamado foi finalizado em {{ (chamado.fechado_em|hora_local).strftime('%d/%m/%Y às %H:%M') }}</small>
     </div>
     <div class="text-end flex-shrink-0">
       <div class="small text-muted fw-bold text-uppercase">Tempo de Resolução</div>
-      <div class="fw-bold text-dark">{{ ((chamado.fechado_em|naive - chamado.criado_em|naive).days) }} dia(s)</div>
+      <div class="fw-bold text-dark">{{ ((chamado.fechado_em|hora_local - chamado.criado_em|hora_local).days) }} dia(s)</div>
     </div>
   </div>
   {% endif %}
@@ -99,7 +99,7 @@
             <div class="flex-fill ps-3">
               <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
                 <h6 class="fw-bold mb-0 text-success">Abertura do Chamado</h6>
-                <small class="text-muted">{{ chamado.criado_em.strftime('%d/%m/%Y às %H:%M') }}</small>
+                <small class="text-muted">{{ (chamado.criado_em|hora_local).strftime('%d/%m/%Y às %H:%M') }}</small>
               </div>
               <p class="text-muted small mb-2">{{ chamado.funcionario.nome_completo }} · {{ chamado.funcionario.setor.nome if chamado.funcionario.setor else '' }}</p>
               <div class="p-3 bg-light rounded border">
@@ -124,7 +124,7 @@
             <div class="flex-fill ps-3">
               <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
                 <h6 class="fw-bold mb-0 text-success"><i class="bi bi-chat-dots me-1"></i>Resposta do Técnico</h6>
-                <small class="text-muted">{{ chamado.atualizado_em.strftime('%d/%m/%Y às %H:%M') if chamado.atualizado_em else '' }}</small>
+                <small class="text-muted">{{ (chamado.atualizado_em|hora_local).strftime('%d/%m/%Y às %H:%M') if chamado.atualizado_em else '' }}</small>
               </div>
               <p class="text-muted small mb-2">{{ chamado.operador.nome_completo if chamado.operador else 'Técnico' }}</p>
               <div class="p-3 rounded border border-success" style="background-color: #ecfdf5">
@@ -172,7 +172,7 @@
             <div class="flex-fill ps-3">
               <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-1">
                 <h6 class="fw-bold mb-0 text-secondary">Chamado Encerrado</h6>
-                <small class="text-muted">{{ chamado.fechado_em.strftime('%d/%m/%Y às %H:%M') }}</small>
+                <small class="text-muted">{{ (chamado.fechado_em|hora_local).strftime('%d/%m/%Y às %H:%M') }}</small>
               </div>
               <p class="text-muted small mb-0">Finalizado por {{ chamado.operador.nome_completo if chamado.operador else 'Sistema' }}</p>
             </div>
@@ -326,7 +326,7 @@
             </div>
             <div class="flex-fill">
               <div class="small text-muted fw-bold text-uppercase">Abertura</div>
-              <div class="fw-medium text-dark small">{{ chamado.criado_em.strftime('%d/%m/%Y') }} às {{ chamado.criado_em.strftime('%H:%M') }}</div>
+              <div class="fw-medium text-dark small">{{ (chamado.criado_em|hora_local).strftime('%d/%m/%Y') }} às {{ (chamado.criado_em|hora_local).strftime('%H:%M') }}</div>
             </div>
           </div>
           {% if chamado.atualizado_em %}
@@ -336,7 +336,7 @@
             </div>
             <div class="flex-fill">
               <div class="small text-muted fw-bold text-uppercase">Atualização</div>
-              <div class="fw-medium text-dark small">{{ chamado.atualizado_em.strftime('%d/%m/%Y') }} às {{ chamado.atualizado_em.strftime('%H:%M') }}</div>
+              <div class="fw-medium text-dark small">{{ (chamado.atualizado_em|hora_local).strftime('%d/%m/%Y') }} às {{ (chamado.atualizado_em|hora_local).strftime('%H:%M') }}</div>
             </div>
           </div>
           {% endif %}
@@ -347,7 +347,7 @@
             </div>
             <div class="flex-fill">
               <div class="small text-muted fw-bold text-uppercase">Encerramento</div>
-              <div class="fw-medium text-dark small">{{ chamado.fechado_em.strftime('%d/%m/%Y') }} às {{ chamado.fechado_em.strftime('%H:%M') }}</div>
+              <div class="fw-medium text-dark small">{{ (chamado.fechado_em|hora_local).strftime('%d/%m/%Y') }} às {{ (chamado.fechado_em|hora_local).strftime('%H:%M') }}</div>
             </div>
           </div>
           {% endif %}
@@ -372,11 +372,11 @@
           </div>
           <div class="d-flex align-items-center gap-3 mb-3">
             <div class="text-center flex-fill p-2 bg-light rounded border">
-              <div class="fw-bold text-dark">{{ ((chamado.fechado_em|naive - chamado.criado_em|naive).days) }}d</div>
+              <div class="fw-bold text-dark">{{ ((chamado.fechado_em|hora_local - chamado.criado_em|hora_local).days) }}d</div>
               <small class="text-muted">Duração</small>
             </div>
             <div class="text-center flex-fill p-2 bg-light rounded border">
-              <div class="fw-bold text-dark">{{ chamado.fechado_em.strftime('%d/%m') }}</div>
+              <div class="fw-bold text-dark">{{ (chamado.fechado_em|hora_local).strftime('%d/%m') }}</div>
               <small class="text-muted">Encerrado</small>
             </div>
           </div>

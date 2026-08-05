@@ -2,6 +2,7 @@ from flask import request, render_template, jsonify
 from flask_login import login_required, current_user
 from routes.auth import admin_required, tecnico_required
 from utils.constants import TipoEquipamento
+from utils.time import hora_local
 from database.models.equipamentos import Computador, AuditoriaComputador
 from routes.inventario import inventario_route
 from services.equipamento_service import EquipamentoService
@@ -45,7 +46,7 @@ service = EquipamentoService(
 def _csv_row(a, d):
     geral = 'OK' if a.status_geral_ok else 'FALHA'
     return [
-        a.data_auditoria.strftime('%d/%m/%Y %H:%M'),
+        hora_local(a.data_auditoria).strftime('%d/%m/%Y %H:%M'),
         a.setor_no_momento.nome if a.setor_no_momento else 'Sem setor',
         'OK' if d and d.hardware_integro else 'FALHA',
         'OK' if d and d.bateria_ok else 'FALHA',

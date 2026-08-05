@@ -5,6 +5,7 @@ from flask import Response, render_template, request, redirect, jsonify
 from flask_login import login_required, current_user
 from routes.auth import admin_required, tecnico_required
 from utils.constants import TipoEquipamento
+from utils.time import hora_local, fuso_padrao, utcnow
 from database.models.equipamentos import (
     Celular, Patrimonio, NumeroTelefone, Auditoria, AuditoriaCelular
 )
@@ -12,7 +13,7 @@ from database.models.usuarios import Setor
 from routes.inventario import inventario_route
 from services.equipamento_service import EquipamentoService
 from peewee import prefetch
-from datetime import datetime
+from datetime import timezone
 
 
 service = EquipamentoService(
@@ -30,7 +31,7 @@ service = EquipamentoService(
 
 def _csv_row(a, d):
     return [
-        a.data_auditoria.strftime('%d/%m/%Y %H:%M'),
+        hora_local(a.data_auditoria).strftime('%d/%m/%Y %H:%M'),
         a.setor_no_momento.nome if a.setor_no_momento else 'Sem setor',
         'OK' if d and d.apps_ok else 'ERRO',
         'OK' if d and d.fotos_ok else 'ERRO',
@@ -155,9 +156,14 @@ def export_auditorias_celular(patr_id):
 @login_required
 @tecnico_required
 def export_mensal_celulares():
-    now = datetime.now()
-    inicio_mes = datetime(now.year, now.month, 1)
-    fim_mes = datetime(now.year + 1, 1, 1) if now.month == 12 else datetime(now.year, now.month + 1, 1)
+    agora_local = hora_local(utcnow())
+    inicio_mes = agora_local.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if agora_local.month == 12:
+        fim_mes = agora_local.replace(year=agora_local.year + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        fim_mes = agora_local.replace(month=agora_local.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    inicio_mes = inicio_mes.replace(tzinfo=fuso_padrao()).astimezone(timezone.utc)
+    fim_mes = fim_mes.replace(tzinfo=fuso_padrao()).astimezone(timezone.utc)
 
     auditorias = list((Auditoria
                        .select(Auditoria, Patrimonio, Celular)
@@ -190,7 +196,7 @@ def export_mensal_celulares():
         cw.writerow([
             a.patrimonio.codigo_etiqueta,
             modelo,
-            a.data_auditoria.strftime('%d/%m/%Y %H:%M'),
+            hora_local(a.data_auditoria).strftime('%d/%m/%Y %H:%M'),
             setor.nome if setor else 'Sem setor',
             'OK' if d and d.apps_ok else 'Falha',
             'OK' if d and d.fotos_ok else 'Falha',
@@ -202,7 +208,7 @@ def export_mensal_celulares():
     return Response(
         output,
         mimetype="text/csv",
-        headers={"Content-disposition": f"attachment; filename=relatorio_mensal_{now.strftime('%m_%Y')}.csv"}
+        headers={"Content-disposition": f"attachment; filename=relatorio_mensal_{agora_local.strftime('%m_%Y')}.csv"}
     )
 
 
