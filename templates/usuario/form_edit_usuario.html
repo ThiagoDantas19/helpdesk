@@ -22,7 +22,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">EMAIL PESSOAL</label>
-                                <input class="form-control" type="text" name="email" value="{{ usuario.email }}" placeholder="opcional">
+                                <input class="form-control" type="text" name="email" value="{{ usuario.email or '' }}" placeholder="opcional">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">USUÁRIO (LOGIN)</label>

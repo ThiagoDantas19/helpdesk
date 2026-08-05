@@ -238,4 +238,12 @@ def executar_migracoes():
             db.execute_sql('PRAGMA foreign_keys = ON')
             logger.exception('v010_chamado_atualizado_em_null ERRO')
 
+    if 'v011_limpar_email_none' not in executadas:
+        try:
+            db.execute_sql("UPDATE user SET email = NULL WHERE email = 'None'")
+            marcar_executada('v011_limpar_email_none')
+            logger.info('v011_limpar_email_none OK')
+        except Exception:
+            logger.exception('v011_limpar_email_none ERRO')
+
     logger.info('Todas as migracoes concluidas.')
