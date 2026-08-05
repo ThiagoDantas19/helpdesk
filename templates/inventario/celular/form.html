@@ -187,4 +187,7 @@
     </div>
   </div>
 </div>
+{% if dados %}
+<script>window.__dadosForm = {{ dados | tojson }};</script>
+{% endif %}
 {% endblock %}

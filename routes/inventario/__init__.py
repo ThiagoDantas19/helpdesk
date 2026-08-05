@@ -1,13 +1,33 @@
 import os
-from flask import Blueprint, render_template, request, redirect, send_from_directory, abort
+from flask import Blueprint, render_template, request, redirect, send_from_directory, abort, jsonify
 from flask_login import login_required, current_user
 from routes.auth import admin_required, tecnico_required
 from database.models.equipamentos import (
     Patrimonio, Auditoria, AuditoriaAnexo, ItemAnexo
 )
+from utils.constants import TipoEquipamento
 from utils.compartilhado import validar_arquivo, salvar_midia, UPLOAD_DIR
 
 inventario_route = Blueprint('inventario', __name__)
+
+
+@inventario_route.route('/patrimonio/verificar', methods=['GET'])
+@login_required
+@admin_required
+def verificar_patrimonio():
+    codigo = request.args.get('codigo', '').strip()
+    excluir = request.args.get('excluir', type=int)
+    if not codigo:
+        return jsonify({'disponivel': True, 'identificacao': ''})
+    query = Patrimonio.select().where(Patrimonio.codigo_etiqueta == codigo)
+    if excluir:
+        query = query.where(Patrimonio.id != excluir)
+    existente = query.first()
+    if not existente:
+        return jsonify({'disponivel': True, 'identificacao': ''})
+    rotulo = TipoEquipamento(existente.tipo).url_name() if existente.tipo in TipoEquipamento.list() else existente.tipo
+    identificacao = f'{rotulo}: {existente.nome_identificador}'
+    return jsonify({'disponivel': False, 'identificacao': identificacao})
 
 
 @inventario_route.route('/')

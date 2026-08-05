@@ -18,7 +18,7 @@
     <div class="col-lg-10">
       <div class="card border-0 shadow-sm rounded-3">
         <div class="card-body p-4">
-          <form method="POST" action="/inventario/computador/{{ computador.patrimonio.id }}/update">
+          <form method="POST" action="/inventario/computador/{{ computador.patrimonio.id }}/update" data-patrimonio-id="{{ computador.patrimonio.id }}">
             
             <div class="row g-3 mb-4">
               <div class="col-12 border-bottom pb-2 mb-2">
@@ -125,4 +125,7 @@
     </div>
   </div>
 </div>
+{% if dados %}
+<script>window.__dadosForm = {{ dados | tojson }};</script>
+{% endif %}
 {% endblock %}

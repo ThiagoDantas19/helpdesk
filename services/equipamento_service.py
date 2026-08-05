@@ -95,9 +95,50 @@ class EquipamentoService:
             return False
         return True
 
+    def _extrair_codigo(self, data):
+        return (data.get('codigo_etiqueta') or data.get('patrimonio') or '').strip()
+
+    def _buscar_por_codigo(self, codigo, ignorar_id=None):
+        if not codigo:
+            return None
+        query = Patrimonio.select().where(Patrimonio.codigo_etiqueta == codigo)
+        if ignorar_id:
+            query = query.where(Patrimonio.id != ignorar_id)
+        return query.first()
+
+    def _mensagem_codigo_duplicado(self, existente):
+        nome = existente.nome_identificador or f'patrimônio #{existente.id}'
+        rotulo = existente.tipo.replace('_', ' ') if existente.tipo else 'equipamento'
+        return f'O patrimônio "{existente.codigo_etiqueta}" já está cadastrado ({rotulo}: {nome}). Use outro código.'
+
+    def _dados_dict(self, dados):
+        if hasattr(dados, 'to_dict'):
+            return dados.to_dict()
+        return dict(dados or {})
+
+    def _render_create_erro(self, dados, msg):
+        if msg:
+            flash(msg, 'danger')
+        ctx = self.get_form_context()
+        ctx['dados'] = self._dados_dict(dados)
+        return render_template(f'inventario/{self.template_prefix}/form.html', **ctx)
+
+    def _render_edit_erro(self, patr_id, dados, msg):
+        if msg:
+            flash(msg, 'danger')
+        obj = self._get_obj(patr_id)
+        ctx = self.get_form_context()
+        ctx[self.var_name] = obj
+        ctx['dados'] = self._dados_dict(dados)
+        return render_template(f'inventario/{self.template_prefix}/form_edit.html', **ctx)
+
     def criar(self, data, extra_fields_fn=None, after_create_fn=None):
         if not self._validar_setor_responsavel(data) or not self._validar_codigo_etiqueta(data):
-            return redirect(f'/inventario/{self.template_prefix}/')
+            return self._render_create_erro(data, None)
+        codigo = self._extrair_codigo(data)
+        existente = self._buscar_por_codigo(codigo)
+        if existente:
+            return self._render_create_erro(data, self._mensagem_codigo_duplicado(existente))
         try:
             with db.atomic():
                 novo_patrimonio = Patrimonio.create(
@@ -117,12 +158,10 @@ class EquipamentoService:
             flash(f'{self.var_name.capitalize()} criado com sucesso.', 'success')
             return redirect(f'/inventario/{self.template_prefix}/')
         except ValueError as e:
-            flash(str(e), 'danger')
-            return redirect(f'/inventario/{self.template_prefix}/')
+            return self._render_create_erro(data, str(e))
         except Exception:
             logger.exception(f'Erro ao criar {self.template_prefix}')
-            flash(f'Erro ao criar {self.template_prefix}. Verifique os dados e tente novamente.', 'danger')
-            return redirect(f'/inventario/{self.template_prefix}/')
+            return self._render_create_erro(data, f'Erro ao criar {self.template_prefix}. Verifique os dados e tente novamente.')
 
     def _get_obj(self, patr_id):
         return self.model_cls.select(self.model_cls, Patrimonio).join(Patrimonio).where(Patrimonio.id == patr_id).get()
@@ -157,7 +196,11 @@ class EquipamentoService:
 
     def atualizar(self, patr_id, data, update_fn=None):
         if not self._validar_setor_responsavel(data) or not self._validar_codigo_etiqueta(data):
-            return redirect(f'/inventario/{self.template_prefix}/{patr_id}')
+            return self._render_edit_erro(patr_id, data, None)
+        codigo = self._extrair_codigo(data)
+        existente = self._buscar_por_codigo(codigo, ignorar_id=patr_id)
+        if existente:
+            return self._render_edit_erro(patr_id, data, self._mensagem_codigo_duplicado(existente))
         try:
             with db.atomic():
                 obj = self.model_cls.get_by_id(patr_id)
@@ -177,12 +220,10 @@ class EquipamentoService:
             flash(f'{self.var_name.capitalize()} atualizado com sucesso.', 'success')
             return redirect(f'/inventario/{self.template_prefix}/')
         except ValueError as e:
-            flash(str(e), 'danger')
-            return redirect(f'/inventario/{self.template_prefix}/{patr_id}')
+            return self._render_edit_erro(patr_id, data, str(e))
         except Exception:
             logger.exception(f'Erro ao atualizar {self.template_prefix}')
-            flash(f'Erro ao atualizar {self.template_prefix}.', 'danger')
-            return redirect(f'/inventario/{self.template_prefix}/{patr_id}')
+            return self._render_edit_erro(patr_id, data, f'Erro ao atualizar {self.template_prefix}. Verifique os dados e tente novamente.')
 
     def form_edit(self, patr_id):
         obj = self._get_obj(patr_id)

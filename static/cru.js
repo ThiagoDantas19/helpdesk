@@ -211,4 +211,95 @@ function abrirLightbox(src, nome) {
 document.addEventListener('DOMContentLoaded', () => {
   $cruLoadEvents();
   cruInitSessionTimer();
+  cruInitPatrimonioValidade();
+  cruRepopularFormulario();
 });
+
+/* ── Validação em tempo real do patrimônio (inventário) ── */
+function cruPatrimonioFeedback(input) {
+  let el = document.getElementById('patrimonio-feedback');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'patrimonio-feedback';
+    el.className = 'form-text';
+    const wrapper = input.closest('.col-md-4, .col-md-5, .col-md-3, .col-md-6') || input.parentElement;
+    wrapper.appendChild(el);
+  }
+  return el;
+}
+
+function cruVerificarPatrimonio(input) {
+  const codigo = input.value.trim();
+  const form = input.closest('form');
+  const fb = cruPatrimonioFeedback(input);
+  clearTimeout(input._patTimer);
+  input.classList.remove('is-valid');
+  fb.classList.remove('text-success');
+  if (!codigo) {
+    input.classList.remove('is-invalid');
+    fb.classList.remove('text-danger');
+    fb.textContent = '';
+    return;
+  }
+  const excluir = form ? form.dataset.patrimonioId : '';
+  input._patTimer = setTimeout(() => {
+    let url = '/inventario/patrimonio/verificar?codigo=' + encodeURIComponent(codigo);
+    if (excluir) url += '&excluir=' + encodeURIComponent(excluir);
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        input.classList.remove('is-invalid', 'is-valid');
+        fb.classList.remove('text-success', 'text-danger');
+        if (d.disponivel) {
+          input.classList.add('is-valid');
+          fb.textContent = 'Patrimônio disponível.';
+          fb.classList.add('text-success');
+        } else {
+          input.classList.add('is-invalid');
+          fb.textContent = 'Patrimônio já cadastrado (' + d.identificacao + ').';
+          fb.classList.add('text-danger');
+        }
+      })
+      .catch(() => {
+        input.classList.remove('is-invalid', 'is-valid');
+        fb.textContent = '';
+      });
+  }, 300);
+}
+
+function cruInitPatrimonioValidade() {
+  document.querySelectorAll('input[name="codigo_etiqueta"], input[name="patrimonio"]').forEach(input => {
+    input.addEventListener('input', () => cruVerificarPatrimonio(input));
+  });
+  document.addEventListener('submit', e => {
+    const form = e.target;
+    if (!form) return;
+    const input = form.querySelector('input[name="codigo_etiqueta"], input[name="patrimonio"]');
+    if (!input || !input.value.trim()) return;
+    if (input.classList.contains('is-invalid')) {
+      e.preventDefault();
+      input.focus();
+      cruVerificarPatrimonio(input);
+    }
+  });
+}
+
+/* ── Repopular formulário após erro no servidor ── */
+function cruRepopularFormulario() {
+  if (!window.__dadosForm) return;
+  Object.entries(window.__dadosForm).forEach(([name, val]) => {
+    const el = document.querySelector('[name="' + name + '"]');
+    if (!el) return;
+    if (el.type === 'checkbox') {
+      el.checked = val === '1' || val === 'on';
+    } else if (el.type === 'radio') {
+      if (el.value === String(val)) el.checked = true;
+    } else {
+      el.value = val || '';
+    }
+    if (el.classList.contains('select2-search') && typeof jQuery !== 'undefined') {
+      jQuery(el).trigger('change');
+    }
+  });
+  delete window.__dadosForm;
+}
