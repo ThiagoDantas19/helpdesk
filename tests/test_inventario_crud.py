@@ -117,6 +117,24 @@ def test_detalhes_equipamento(client, tipo, url_prefix, form_data, model_cls):
     assert resp.status_code == 200
 
 
+def test_computador_lista_e_detalhe_exibem_nome_identificador(client):
+    _criar_equipamento(client, 'computador', 'computador', {
+        'codigo_etiqueta': '0001', 'nome_identificador': 'Notebook Dell Latitude - TI',
+        'tag': 'TAG-001', 'nome_ad': 'PC-TI-DELL', 'numero_serie': 'SN-001'
+    })
+    pat = Patrimonio.select().first()
+    criar_tecnico()
+    login(client, 'tecnico', 'tecnico')
+    resp_lista = client.get('/inventario/computador/')
+    assert resp_lista.status_code == 200
+    assert pat.nome_identificador in resp_lista.data.decode('utf-8')
+    resp_det = client.get(f'/inventario/computador/{pat.id}')
+    assert resp_det.status_code == 200
+    corpo = resp_det.data.decode('utf-8')
+    assert pat.nome_identificador in corpo
+    assert 'Nome Identificador' in corpo
+
+
 @pytest.mark.parametrize('tipo,url_prefix,form_data,model_cls', TYPES)
 def test_form_editar_equipamento_admin(client, tipo, url_prefix, form_data, model_cls):
     _criar_equipamento(client, tipo, url_prefix, form_data)

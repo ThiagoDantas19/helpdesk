@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Detalhes: {{ computador.nome_ad or computador.tag }}{% endblock %}
+{% block title %}Detalhes: {{ computador.patrimonio.nome_identificador }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -10,10 +10,10 @@
         <ol class="breadcrumb mb-1 small">
           <li class="breadcrumb-item"><a href="/inventario/" class="text-decoration-none">Inventário</a></li>
           <li class="breadcrumb-item"><a href="/inventario/computador/" class="text-decoration-none">Computadores</a></li>
-          <li class="breadcrumb-item active" aria-current="page">{{ computador.nome_ad or computador.tag }}</li>
+          <li class="breadcrumb-item active" aria-current="page">{{ computador.patrimonio.nome_identificador }}</li>
         </ol>
       </nav>
-      <h1 class="h3 mb-0 fw-bold">{{ computador.nome_ad or computador.tag }}</h1>
+      <h1 class="h3 mb-0 fw-bold">{{ computador.patrimonio.nome_identificador }}</h1>
     </div>
     <a href="/inventario/computador/" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
       <i class="bi bi-arrow-left me-1"></i> Voltar
@@ -36,6 +36,10 @@
             <div class="col-md-6">
                 <label class="small text-muted fw-bold text-uppercase d-block mb-1">Patrimônio (Etiqueta)</label>
                 <p class="fs-5 fw-bold mb-0 text-primary">{{ computador.patrimonio.codigo_etiqueta or 'S/E' }}</p>
+            </div>
+            <div class="col-md-6">
+                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Nome Identificador</label>
+                <p class="fs-5 fw-bold mb-0 text-dark">{{ computador.patrimonio.nome_identificador or '—' }}</p>
             </div>
             <div class="col-md-6">
                 <label class="small text-muted fw-bold text-uppercase d-block mb-1">Hostname (AD)</label>
