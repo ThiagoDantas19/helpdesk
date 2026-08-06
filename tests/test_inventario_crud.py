@@ -70,6 +70,19 @@ def test_lista_equipamentos_tecnico(client, tipo, url_prefix, form_data, model_c
 
 
 @pytest.mark.parametrize('tipo,url_prefix,form_data,model_cls', TYPES)
+def test_lista_equipamentos_mostra_itens_cadastrados(client, tipo, url_prefix, form_data, model_cls):
+    _criar_equipamento(client, tipo, url_prefix, form_data)
+    pat = Patrimonio.select().first()
+    criar_tecnico()
+    login(client, 'tecnico', 'tecnico')
+    resp = client.get(f'/inventario/{url_prefix}/')
+    assert resp.status_code == 200
+    corpo = resp.data.decode('utf-8')
+    assert pat.codigo_etiqueta in corpo
+    assert 'Nenhum' not in corpo
+
+
+@pytest.mark.parametrize('tipo,url_prefix,form_data,model_cls', TYPES)
 def test_lista_equipamentos_usuario_bloqueado(client, tipo, url_prefix, form_data, model_cls):
     criar_usuario_comum()
     login(client, 'usuario', 'usuario')

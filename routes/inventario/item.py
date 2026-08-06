@@ -13,6 +13,7 @@ service = EquipamentoService(
     tipo=TipoEquipamento.ITEM_DIVERSO,
     template_prefix='item',
     var_name='item',
+    var_name_plural='itens',
     auditoria_cls=AuditoriaItemDiverso,
     auditoria_itens=['estado_fisico_ok', 'funcionamento_ok', 'acessorios_ok', 'etiqueta_legivel'],
     nome_identificador_fn=lambda d: d.get('nome'),
