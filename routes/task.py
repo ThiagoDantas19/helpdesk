@@ -227,7 +227,7 @@ def form_edit_detalhes_chamados(os_id):
     itens_diversos = ItemDiverso.select().join(Patrimonio).where(Patrimonio.ativo == True)
 
     vinc_query = ChamadoEquipamento.select().where(ChamadoEquipamento.chamado == chamado)
-    equipamentos_vinculados = {f"{v.tipo_equipamento}_{v.equipamento_id}" for v in vinc_query}
+    equipamentos_vinculados = [f"{v.tipo_equipamento}_{v.equipamento_id}" for v in vinc_query]
 
     anexos = ChamadoAnexo.select().where(ChamadoAnexo.chamado == chamado).order_by(ChamadoAnexo.criado_em.desc())
 
@@ -266,12 +266,12 @@ def update_chamados(os_id):
     chamado.save()
     salvar_anexos_chamado(chamado, request.files.getlist('anexos'))
 
-    ids_recebidos = set()
-    for item in request.form.getlist('equipamentos_ids'):
-        if item and "_" in item:
-            ids_recebidos.add(item)
+    if 'equipamentos_ids' in request.form:
+        ids_recebidos = set()
+        for item in request.form.getlist('equipamentos_ids'):
+            if item and "_" in item:
+                ids_recebidos.add(item)
 
-    if ids_recebidos:
         existentes = set()
         for v in ChamadoEquipamento.select().where(ChamadoEquipamento.chamado == chamado):
             chave = f"{v.tipo_equipamento}_{v.equipamento_id}"
@@ -291,10 +291,8 @@ def update_chamados(os_id):
         for chave in para_adicionar:
             tipo, eq_id = chave.rsplit("_", 1)
             ChamadoEquipamento.create(chamado=chamado, tipo_equipamento=tipo, equipamento_id=int(eq_id))
-    else:
-        ChamadoEquipamento.delete().where(ChamadoEquipamento.chamado == chamado).execute()
 
-    return redirect('/')
+    return redirect(f'/task/{os_id}')
 
 
 @task_route.route('/<int:os_id>/anexar', methods=['POST'])

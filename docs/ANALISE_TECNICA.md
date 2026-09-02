@@ -1,7 +1,7 @@
 # Análise Técnica Completa — HelpDesk IT
 
 > Documento de arquitetura, segurança e histórico do projeto.
-> Versão: 2026-08-05 · Suíte de testes: **160 passando**
+> Versão: 2026-09-02 · Suíte de testes: **167 passando**
 
 ---
 
@@ -17,7 +17,7 @@
 | CSRF | Flask-WTF `CSRFProtect` global + meta tag + injeção automática no JS |
 | Cache | Flask-Caching (`SimpleCache` por padrão; `RedisCache` configurável) |
 | Frontend | Bootstrap 5.3, CSS/JS customizados (`style.css`, `cru.js`) |
-| Testes | pytest 9.1.1 — 160 testes em 12 arquivos + conftest |
+| Testes | pytest 9.1.1 — 167 testes em 12 arquivos + conftest |
 | Uploads | Pasta `uploads/`, limite de 55 MB, validação por magic bytes |
 
 ---
@@ -266,7 +266,7 @@ impressora/item)
   genérico remove vínculos e arquivos.
 - **Config Factory**: `configure_all(skip_db_init=bool)` separa app de banco; comandos
   CLI (`flask seed`).
-- **Timezone**: `utcnow()` em `utils/time.py` em todos os modelos/rotas;
+- **Timezone**: `utcnow()` e `hora_local()` em `utils/time.py` em todos os modelos/rotas;
   exibição no fuso local via `zoneinfo` (`America/Sao_Paulo`) — requer `tzdata`
   no Windows.
 - **Enums**: `TipoEquipamento`, `StatusChamado`, `PrioridadeChamado`, `TipoAcesso` —
@@ -348,7 +348,14 @@ Bootstrap 5.3.3 · pytest 9.1.1
 - **Bug 500 na edição de usuário sem email**: o template renderizava `value="None"`
   e o submit gravava a string `'None'`, conflitando com a UNIQUE de email →
   migração **v011** limpa os registros corrompidos (`email = 'None'` → NULL).
-- **160 testes passando.**
+- **167 testes passando.**
+
+### Sessão 7 — Publicação e Qualidade (2026-09-02)
+- Publicação no GitHub (`ThiagoDantas19/helpdesk`, público).
+- `naive_dt` removido; `hora_local` registrado como template filter no `config.py`.
+- `seed_personalizado.py` isolado (gitignored) — contém a estrutura organizacional
+  real do veterinário; `seed.py` usa fallback genérico (TI) quando ausente.
+- **167 testes passando.**
 
 ---
 
@@ -377,6 +384,6 @@ Bootstrap 5.3.3 · pytest 9.1.1
 ## 12. Executando Testes
 
 ```bash
-python -m pytest tests/ -q        # 160 testes (~1 min)
+python -m pytest tests/ -q        # 167 testes (~2 min)
 python -m pytest tests/test_limpeza_delete.py -q   # subset
 ```

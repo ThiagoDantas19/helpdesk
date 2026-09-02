@@ -110,7 +110,7 @@
                 <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
                 <select class="form-select" name="status" required>
                   <option value="aberto" {% if chamado.status == 'aberto' %}selected{% endif %}>Aberto</option>
-                  <option value="em_atendimento" {% if chamado.status == 'em_atendimento' %}selected{% endif %}>Em Atendimento</option>
+                  <option value="em_andamento" {% if chamado.status == 'em_andamento' %}selected{% endif %}>Em Andamento</option>
                   <option value="fechado" {% if chamado.status == 'fechado' %}selected{% endif %}>Fechado</option>
                 </select>
               </div>

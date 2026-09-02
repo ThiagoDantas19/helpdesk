@@ -190,5 +190,5 @@ gunicorn -w 1 -b 0.0.0.0:8000 main:app
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest tests/ -q     # 160 testes
+python -m pytest tests/ -q     # 167 testes
 ```

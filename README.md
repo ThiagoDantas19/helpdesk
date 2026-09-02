@@ -16,7 +16,7 @@ Internal IT helpdesk and asset management web app with periodic equipment audits
 - **Empréstimos** — registro de empréstimo/devolução de equipamentos entre funcionários.
 - **Logs de auditoria** — trilha de ações (criar, editar, deletar) registrada por usuário.
 - **Migrações versionadas** — banco evolui de forma incremental na inicialização (v001 → v011).
-- **160 testes automatizados** (pytest) cobrindo rotas, permissões e serviços.
+- **167 testes automatizados** (pytest) cobrindo rotas, permissões e serviços.
 
 ### Documentação
 - 📖 [Manual de Uso](docs/MANUAL_DE_USO.md) — instalação, primeiros passos e uso de cada módulo (PT-BR).
@@ -88,7 +88,7 @@ O projeto usa SQLite com WAL — adequado para uso interno com um único process
 - **Equipment loans** — track loans/returns between employees.
 - **Audit logs** — full action trail (create, edit, delete) per user.
 - **Versioned migrations** — incremental DB schema updates on startup (v001 → v011).
-- **160 automated tests** (pytest) covering routes, permissions and services.
+- **167 automated tests** (pytest) covering routes, permissions and services.
 
 ### Docs
 - 📖 [User Manual](docs/MANUAL_DE_USO.md) — installation, first steps and module usage (PT-BR).
