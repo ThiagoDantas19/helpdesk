@@ -22,7 +22,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted">EMAIL PESSOAL</label>
-                                <input class="form-control" type="text" name="email" value="{{ usuario.email or '' }}" placeholder="opcional">
+                                <input class="form-control" type="email" name="email" value="{{ usuario.email or '' }}" placeholder="opcional">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">USUÁRIO (LOGIN)</label>
@@ -50,7 +50,7 @@
                                 <label class="form-label fw-bold small text-muted">SETOR</label>
                                 <select class="form-select select2-search" name="setor_id" id="setor" required>
                                     {% for s in setores %}
-                                    <option value="{{ s.id }}" {% if usuario.setor.id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+                                    <option value="{{ s.id }}" {% if usuario.setor and usuario.setor.id == s.id %}selected{% endif %}>{{ s.nome }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -58,7 +58,7 @@
                                 <label class="form-label fw-bold small text-muted">CARGO</label>
                                 <select class="form-select select2-search" name="cargo_id" id="cargo" required>
                                     {% for c in cargos %}
-                                    <option value="{{ c.id }}" {% if usuario.cargo.id == c.id %}selected{% endif %}>{{ c.nome }}</option>
+                                    <option value="{{ c.id }}" {% if usuario.cargo and usuario.cargo.id == c.id %}selected{% endif %}>{{ c.nome }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -76,7 +76,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">EMAIL CORPORATIVO</label>
-                                <input class="form-control" name="email_corporativo" value="{{ usuario.email_corporativo or '' }}" placeholder="exemplo@empresa.com.br">
+                                <input class="form-control" type="email" name="email_corporativo" value="{{ usuario.email_corporativo or '' }}" placeholder="exemplo@empresa.com.br">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-muted">PERFIL INTELBRAS</label>

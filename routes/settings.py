@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from routes.auth import admin_required
-from database.models.usuarios import Setor, Cargo
+from database.models.usuarios import Setor, Cargo, User
 from database.models.log import registrar_log
 from database.models.credencial import Credencial
 from utils.crypto import encrypt, decrypt
@@ -74,6 +74,8 @@ def update_setor(id):
 @admin_required
 def deletar_setor(id):
     setor = Setor.get_by_id(id)
+    if User.select().where(User.setor == id).first():
+        return jsonify({'error': 'Não é possível excluir: existem usuários neste setor.'}), 409
     nome = setor.nome
     setor.delete_instance()
     registrar_log(current_user, 'deletar', entidade='setor', entidade_id=id,
@@ -145,6 +147,8 @@ def update_cargo(id):
 @admin_required
 def deletar_cargo(id):
     cargo = Cargo.get_by_id(id)
+    if User.select().where(User.cargo == id).first():
+        return jsonify({'error': 'Não é possível excluir: existem usuários com este cargo.'}), 409
     nome = cargo.nome
     cargo.delete_instance()
     registrar_log(current_user, 'deletar', entidade='cargo', entidade_id=id,

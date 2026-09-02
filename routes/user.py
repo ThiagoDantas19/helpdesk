@@ -1,10 +1,11 @@
+import re
 from flask import Blueprint, render_template, request, redirect, flash, jsonify
 from flask_login import login_required, current_user
 from routes.auth import admin_required
 from database.models.usuarios import User, Setor, Cargo
 from database.models.log import registrar_log
 from database.database import unaccent
-from peewee import fn
+from peewee import fn, IntegrityError
 from markupsafe import escape
 from math import ceil
 from datetime import datetime
@@ -20,6 +21,19 @@ def validar_data(data_str):
         return datetime.strptime(data_str, '%d/%m/%Y').date()
     except ValueError:
         return False
+
+
+def validar_email(email):
+    if email is None:
+        return True
+    return re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email) is not None
+
+
+def _processar_email(valor):
+    valor = (valor or '').strip()
+    if not valor:
+        return None
+    return valor.lower()
 
 
 @user_route.route('/', methods=['GET'])
@@ -79,7 +93,6 @@ def criar_usuario():
     data = request.form
 
     nome_completo = data.get('nome_completo', '').strip()
-    email = data.get('email', '').strip() or None
     if not nome_completo:
         flash('Nome completo é obrigatório.', 'danger')
         return redirect('/user/new')
@@ -89,31 +102,55 @@ def criar_usuario():
         flash('Este nome de usuário já existe.', 'danger')
         return redirect('/user/new')
 
+    email = _processar_email(data.get('email'))
+    if email and not validar_email(email):
+        flash('Formato de e-mail pessoal inválido.', 'danger')
+        return redirect('/user/new')
+    if email and User.select().where(User.email == email).first():
+        flash('Este e-mail pessoal já está cadastrado.', 'danger')
+        return redirect('/user/new')
+
+    email_corp = _processar_email(data.get('email_corporativo'))
+    if email_corp and not validar_email(email_corp):
+        flash('Formato de e-mail corporativo inválido.', 'danger')
+        return redirect('/user/new')
+
     data_admissao = validar_data(data.get('data_admissao'))
     if data_admissao is False:
         flash('Data de admissão inválida. Use o formato dd/mm/aaaa.', 'danger')
         return redirect('/user/new')
 
-    user = User.create(
-        nome_completo=nome_completo,
-        email=email,
-        username=username,
-        telefone=data.get('telefone'),
-        setor=data.get('setor_id'),
-        cargo=data.get('cargo_id'),
-        tipo_acesso=data.get('tipo_acesso', 'usuario'),
-        tipo_vinculo=data.get('tipo_vinculo', 'efetivo'),
-        data_admissao=data_admissao,
-        observacoes=data.get('observacoes') or None,
-        email_corporativo=data.get('email_corporativo'),
-        perfil_intelbras=data.get('perfil_intelbras'),
-        acesso_ad=data.get('acesso_ad') == '1',
-        acesso_sistema=data.get('acesso_sistema') == '1',
-        acesso_sharepoint=data.get('acesso_sharepoint') == '1',
-        biometria_dedo=data.get('biometria_dedo') == '1',
-        biometria_facial=data.get('biometria_facial') == '1',
-        ativo=True
-    )
+    setor_id = data.get('setor_id')
+    cargo_id = data.get('cargo_id')
+    if not setor_id or not cargo_id:
+        flash('Setor e cargo são obrigatórios.', 'danger')
+        return redirect('/user/new')
+
+    try:
+        user = User.create(
+            nome_completo=nome_completo,
+            email=email,
+            username=username,
+            telefone=data.get('telefone'),
+            setor=setor_id,
+            cargo=cargo_id,
+            tipo_acesso=data.get('tipo_acesso', 'usuario'),
+            tipo_vinculo=data.get('tipo_vinculo', 'efetivo'),
+            data_admissao=data_admissao,
+            observacoes=data.get('observacoes') or None,
+            email_corporativo=email_corp,
+            perfil_intelbras=data.get('perfil_intelbras'),
+            acesso_ad=data.get('acesso_ad') == '1',
+            acesso_sistema=data.get('acesso_sistema') == '1',
+            acesso_sharepoint=data.get('acesso_sharepoint') == '1',
+            biometria_dedo=data.get('biometria_dedo') == '1',
+            biometria_facial=data.get('biometria_facial') == '1',
+            ativo=True
+        )
+    except IntegrityError:
+        flash('Não foi possível salvar: já existe um registro com os mesmos dados únicos.', 'danger')
+        return redirect('/user/new')
+
     password = data.get('password')
     if password:
         if len(password) < 4:
@@ -146,18 +183,38 @@ def update_usuario(user_id):
     data = request.form
 
     usuario.nome_completo = data.get('nome_completo')
-    usuario.email = data.get('email', '').strip() or None
+
+    email = _processar_email(data.get('email'))
+    if email and not validar_email(email):
+        flash('Formato de e-mail pessoal inválido.', 'danger')
+        return redirect(f'/user/{user_id}/edit')
+    if email and User.select().where(User.email == email, User.id != user_id).first():
+        flash('Este e-mail pessoal já está em uso por outro usuário.', 'danger')
+        return redirect(f'/user/{user_id}/edit')
+    usuario.email = email
+
     username = data.get('username', '').strip() or None
     if username and User.select().where(User.username == username, User.id != user_id).first():
         flash('Este nome de usuário já está em uso.', 'danger')
         return redirect(f'/user/{user_id}/edit')
     usuario.username = username
     usuario.telefone = data.get('telefone')
-    usuario.setor = data.get('setor_id')
-    usuario.cargo = data.get('cargo_id')
+    setor_id = data.get('setor_id')
+    cargo_id = data.get('cargo_id')
+    if not setor_id or not cargo_id:
+        flash('Setor e cargo são obrigatórios.', 'danger')
+        return redirect(f'/user/{user_id}/edit')
+    usuario.setor = setor_id
+    usuario.cargo = cargo_id
     usuario.tipo_acesso = data.get('tipo_acesso')
     usuario.tipo_vinculo = data.get('tipo_vinculo')
-    usuario.email_corporativo = data.get('email_corporativo')
+
+    email_corp = _processar_email(data.get('email_corporativo'))
+    if email_corp and not validar_email(email_corp):
+        flash('Formato de e-mail corporativo inválido.', 'danger')
+        return redirect(f'/user/{user_id}/edit')
+    usuario.email_corporativo = email_corp
+
     usuario.perfil_intelbras = data.get('perfil_intelbras')
     usuario.observacoes = data.get('observacoes') or None
     data_admissao = validar_data(data.get('data_admissao'))
@@ -182,7 +239,12 @@ def update_usuario(user_id):
             return redirect(f'/user/{user_id}/edit')
         usuario.set_password(password)
 
-    usuario.save()
+    try:
+        usuario.save()
+    except IntegrityError:
+        flash('Não foi possível salvar: já existe um registro com os mesmos dados únicos.', 'danger')
+        return redirect(f'/user/{user_id}/edit')
+
     registrar_log(current_user, 'atualizar', entidade='user', entidade_id=usuario.id,
                   descricao=f'Usuário {usuario.username} atualizado.')
     flash('Usuário atualizado com sucesso.', 'success')
