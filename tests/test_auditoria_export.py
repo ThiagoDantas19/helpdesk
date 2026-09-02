@@ -81,7 +81,7 @@ def test_export_csv_computador_contem_cabecalho_e_dados(client):
     assert resp.status_code == 200
     assert resp.mimetype == 'text/csv'
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 2
     assert 'Hardware' in rows[0]
@@ -97,7 +97,7 @@ def test_export_csv_celular_contem_cabecalho_e_dados(client):
     resp = client.get('/inventario/celular/1/auditorias/export')
     assert resp.status_code == 200
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 2
     assert 'Apps' in rows[0]
@@ -113,7 +113,7 @@ def test_export_csv_telefone_contem_cabecalho_e_dados(client):
     resp = client.get('/inventario/telefone/1/auditorias/export')
     assert resp.status_code == 200
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 2
     assert 'Chamada' in rows[0]
@@ -129,7 +129,7 @@ def test_export_csv_impressora_contem_cabecalho_e_dados(client):
     resp = client.get('/inventario/impressora/1/auditorias/export')
     assert resp.status_code == 200
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 2
     assert 'Liga' in rows[0]
@@ -145,7 +145,7 @@ def test_export_csv_item_contem_cabecalho_e_dados(client):
     resp = client.get('/inventario/item/1/auditorias/export')
     assert resp.status_code == 200
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 2
     assert 'Estado Fisico' in rows[0]
@@ -161,7 +161,7 @@ def test_export_csv_multiplas_auditorias(client):
     login(client, 'tecnico', 'tecnico')
     resp = client.get('/inventario/computador/1/auditorias/export')
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 3
     assert rows[1][-1] == 'Segunda'
@@ -176,7 +176,7 @@ def test_export_sem_auditorias_retorna_csv_com_cabecalho(client):
     resp = client.get('/inventario/computador/1/auditorias/export')
     assert resp.status_code == 200
     content = resp.data.decode('utf-8')
-    reader = csv.reader(StringIO(content))
+    reader = csv.reader(StringIO(content), delimiter=';')
     rows = list(reader)
     assert len(rows) == 1
 

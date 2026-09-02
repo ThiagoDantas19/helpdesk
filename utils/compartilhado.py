@@ -94,7 +94,8 @@ def export_auditoria_csv(patrimonio_id, header_row, row_generator, filename_pref
     else:
         auditorias = auditorias_query
     si = StringIO()
-    cw = csv.writer(si)
+    si.write('\ufeff')
+    cw = csv.writer(si, delimiter=';')
     cw.writerow(header_row)
     for auditoria, detalhes in auditorias:
         cw.writerow(row_generator(auditoria, detalhes[0] if detalhes else None))

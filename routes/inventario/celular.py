@@ -190,7 +190,8 @@ def export_mensal_celulares():
                .where(Setor.id.in_([a.setor_no_momento_id for a in auditorias]))}
 
     si = StringIO()
-    cw = csv.writer(si)
+    si.write('\ufeff')
+    cw = csv.writer(si, delimiter=';')
     cw.writerow(['Patrimonio', 'Modelo', 'Data Auditoria', 'Setor', 'Apps', 'Fotos', 'WhatsApp', 'Sem Avarias', 'Observacoes'])
     for a in auditorias:
         cel = celulares.get(a.patrimonio_id)

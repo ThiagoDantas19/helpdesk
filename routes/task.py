@@ -354,7 +354,8 @@ def exportar_chamados_csv():
     chamados = prefetch(query, User, Setor)
 
     si = StringIO()
-    cw = csv.writer(si)
+    si.write('\ufeff')
+    cw = csv.writer(si, delimiter=';')
     cw.writerow(['ID', 'Titulo', 'Descricao', 'Status', 'Prioridade', 'Categoria',
                  'Solicitante', 'Setor', 'Operador', 'Criado Em', 'Atualizado Em', 'Fechado Em', 'Resposta'])
     for c in chamados:
